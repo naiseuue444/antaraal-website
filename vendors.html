@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vendor — Antaraal</title>
+<meta name="description" content="Verified aerospace suppliers with certifications, capabilities and full profiles.">
+<link rel="icon" href="m/antaraal-logo.png">
+<link rel="stylesheet" href="app/app.css?v=10">
+</head>
+<body>
+<main id="app">
+  <div class="wrap">
+
+    <div class="phead">
+      <p class="phead__kicker">Network</p>
+      <h1>Vendor</h1>
+      <p>Aerospace suppliers on the Antaraal network. Suppliers with published quality
+         certifications carry a <b>Verified</b> badge; others are listed as unverified until
+         audited.</p>
+      <div class="catstat" id="vstat"></div>
+    </div>
+
+    <div class="catbar">
+      <form class="search" id="searchForm" role="search">
+        <input class="search__input" id="q" type="search"
+               placeholder="Search suppliers — name, city or capability…" autocomplete="off">
+        <button class="search__btn" type="submit">Search</button>
+      </form>
+      <div class="fieldnote" id="fieldnote" hidden>
+        <span>Filtered to <b id="fieldName"></b></span>
+        <a href="products.html">Browse all categories</a>
+      </div>
+      <div class="chips" id="filter">
+        <button class="chip chip--active" data-f="all">All</button>
+        <button class="chip" data-f="verified">Verified</button>
+        <button class="chip" data-f="unverified">Unverified</button>
+      </div>
+    </div>
+
+    <section>
+      <p class="muted" id="resultCount" style="font-size:14px;margin:0 0 14px"></p>
+      <div class="grid grid--2" id="list"></div>
+      <div style="text-align:center;margin-top:26px">
+        <button class="btn btn--ghost" id="more" hidden>Show more suppliers</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script src="app/vendors.js?v=10"></script>
+<script src="app/data.js?v=10"></script>
+<script src="app/app.js?v=10"></script>
+<script>
+(function () {
+  var A = window.Antaraal;
+  var ALL = (window.ANTARAAL_VENDORS && window.ANTARAAL_VENDORS.length)
+    ? window.ANTARAAL_VENDORS
+    : (A.data.vendors || []);
+
+  var PAGE = 24;
+  var state = { q: "", filter: "all", field: null, shown: PAGE };
+
+  var field = new URLSearchParams(location.search).get("field");
+  if (field) {
+    state.field = field.toLowerCase();
+    document.getElementById("fieldName").textContent = field;
+    document.getElementById("fieldnote").hidden = false;
+  }
+
+  var STATES = ("andhra pradesh|arunachal pradesh|assam|bihar|chhattisgarh|goa|gujarat|haryana|" +
+    "himachal pradesh|jharkhand|karnataka|kerala|madhya pradesh|maharashtra|manipur|meghalaya|" +
+    "mizoram|nagaland|odisha|punjab|rajasthan|sikkim|tamil nadu|telangana|tripura|uttar pradesh|" +
+    "uttarakhand|west bengal|delhi|puducherry|chandigarh|jammu and kashmir|ladakh").split("|");
+  function city(addr) {
+    if (!addr) return "";
+    var s = addr.replace(/[–—-]?\s*(?:pin[:\-\s]*)?\b\d{3}\s?\d{3}\b.*$/i, "")
+                .replace(/[–—-]?\s*\b\d{5,6}\b.*$/, "");
+    var parts = s.split(/[,\n]/).map(function (x) { return x.trim(); })
+      .filter(Boolean).map(function (x) {
+        return x.replace(/\s*[-–—]\s*$/, "").replace(/\s*(India|IN)\s*$/i, "").trim();
+      })
+      .filter(Boolean);
+    while (parts.length > 1 && STATES.indexOf(parts[parts.length - 1].toLowerCase()) > -1) parts.pop();
+    var p = parts.length ? parts[parts.length - 1] : "";
+    return p.replace(/^[-\s]+/, "").replace(/[-\s]+$/, "").trim();
+  }
+
+  function matches(v) {
+    if (state.filter === "verified" && !v.verified) return false;
+    if (state.filter === "unverified" && v.verified) return false;
+    if (state.field) {
+      var f = state.field;
+      var ok = (v.categories || []).some(function (c) {
+        c = c.toLowerCase();
+        return c.indexOf(f) > -1 || f.indexOf(c) > -1;
+      });
+      if (!ok) return false;
+    }
+    if (state.q) {
+      var s = state.q.toLowerCase();
+      var hay = (v.name + " " + (v.address || "") + " " + (v.categories || []).join(" ") +
+                 " " + (v.certText || "") + " " + (v.activities || "")).toLowerCase();
+      if (hay.indexOf(s) === -1) return false;
+    }
+    return true;
+  }
+
+  function badge(v) {
+    return v.verified
+      ? '<span class="badge badge--verified">Verified</span>'
+      : '<span class="badge badge--unverified">Unverified</span>';
+  }
+
+  function tags(list, n) {
+    list = list || [];
+    var shown = list.slice(0, n).map(function (c) {
+      return '<a class="minitag" href="vendors.html?field=' + encodeURIComponent(c) + '">' + A.esc(c) + "</a>";
+    });
+    if (list.length > n) shown.push('<span class="minitag minitag--more">+' + (list.length - n) + "</span>");
+    return shown.join("");
+  }
+
+  function card(v) {
+    var loc = city(v.address);
+    return (
+      '<article class="card vcard ' + (v.verified ? "vcard--verified" : "vcard--unverified") + '">' +
+        '<div class="vcard__head">' +
+          '<div class="vcard__id">' +
+            (v.logo
+              ? '<img class="vcard__logo" src="' + A.esc(v.logo) + '" alt="" loading="lazy">'
+              : '<div class="vcard__logo vcard__logo--ph">' + A.esc(v.name.charAt(0)) + "</div>") +
+            "<div>" +
+              '<h3 class="vcard__name">' + A.esc(v.name) + "</h3>" +
+              (loc ? '<div class="vcard__loc">' + A.esc(loc) + "</div>" : "") +
+            "</div>" +
+          "</div>" + badge(v) +
+        "</div>" +
+
+        (v.certText
+          ? '<p class="vcard__cert"><b>Certified</b> ' + A.esc(v.certText) + "</p>"
+          : '<p class="vcard__cert vcard__cert--none">No quality certification on file</p>') +
+
+        '<div class="minitags">' + tags(v.categories, 4) + "</div>" +
+
+        '<div class="card__foot">' +
+          (v.website
+            ? '<a class="btn btn--ghost btn--sm" href="' + A.esc(v.website) + '" target="_blank" rel="noopener">Website</a>'
+            : "<span></span>") +
+          '<button class="btn btn--dark btn--sm" data-profile="' + A.esc(v.id) + '">View profile</button>' +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function profile(v) {
+    var box = A.h('<div></div>');
+    box.innerHTML =
+      '<div class="prof">' +
+        '<div class="prof__head">' +
+          (v.logo ? '<img class="prof__logo" src="' + A.esc(v.logo) + '" alt="">' : "") +
+          "<div>" + badge(v) +
+            (v.address ? '<p class="prof__addr">' + A.esc(v.address) + "</p>" : "") +
+          "</div>" +
+        "</div>" +
+        (v.certText ? '<div class="prof__row"><span class="prof__k">Certifications</span><span>' + A.esc(v.certText) + "</span></div>" : "") +
+        '<div class="prof__row"><span class="prof__k">Categories</span><span class="prof__tags">' +
+          (v.categories || []).map(function (c) {
+            return '<a class="minitag" href="vendors.html?field=' + encodeURIComponent(c) + '">' + A.esc(c) + "</a>";
+          }).join("") + "</span></div>" +
+        (v.website ? '<div class="prof__row"><span class="prof__k">Website</span><a href="' + A.esc(v.website) + '" target="_blank" rel="noopener">' + A.esc(v.websiteLabel || v.website) + "</a></div>" : "") +
+        (v.contact ? '<div class="prof__row"><span class="prof__k">Contact</span><span>' + A.esc(v.contact) + "</span></div>" : "") +
+        (v.activities ? '<div class="prof__act"><span class="prof__k">Activities</span><p>' + A.esc(v.activities).replace(/\n\n/g, "</p><p>") + "</p></div>" : "") +
+        '<div class="card__foot" style="margin-top:6px">' +
+          '<a class="btn btn--ghost btn--sm" href="buyers.html">See open tenders</a>' +
+          '<a class="btn btn--green btn--sm" href="apply.html">Request a quote</a>' +
+        "</div>" +
+      "</div>";
+    return box;
+  }
+
+  var vById = {}; ALL.forEach(function (v) { vById[v.id] = v; });
+
+  function render(reset) {
+    if (reset) state.shown = PAGE;
+    var hits = ALL.filter(matches);
+    var slice = hits.slice(0, state.shown);
+    document.getElementById("list").innerHTML = slice.length
+      ? slice.map(card).join("")
+      : '<div class="empty">' +
+        (state.field
+          ? "No listed suppliers in <b>" + A.esc(field) + "</b> yet. <a href='apply.html'>Apply as a vendor</a>."
+          : "No suppliers match your search.") + "</div>";
+    document.getElementById("resultCount").textContent =
+      hits.length + " supplier" + (hits.length === 1 ? "" : "s") +
+      (state.field ? " in " + field : "") +
+      (state.filter !== "all" ? " · " + state.filter : "");
+    document.getElementById("more").hidden = state.shown >= hits.length;
+  }
+
+  var vstat = document.getElementById("vstat");
+  vstat.innerHTML =
+    "<span><b>" + ALL.length + "</b> suppliers</span>" +
+    "<span><b>" + ALL.filter(function (v) { return v.verified; }).length + "</b> verified</span>" +
+    "<span><b>" + new Set(ALL.reduce(function (a, v) { return a.concat(v.categories || []); }, [])).size + "</b> capabilities</span>";
+
+  document.getElementById("searchForm").addEventListener("submit", function (e) {
+    e.preventDefault(); state.q = document.getElementById("q").value.trim(); render(true);
+  });
+  var t;
+  document.getElementById("q").addEventListener("input", function (e) {
+    clearTimeout(t); var val = e.target.value.trim();
+    t = setTimeout(function () { state.q = val; render(true); }, 160);
+  });
+  document.getElementById("filter").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-f]"); if (!b) return;
+    state.filter = b.dataset.f;
+    Array.prototype.forEach.call(this.children, function (c) { c.classList.toggle("chip--active", c === b); });
+    render(true);
+  });
+  document.getElementById("more").addEventListener("click", function () {
+    state.shown += PAGE; render();
+  });
+  document.getElementById("list").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-profile]"); if (!b) return;
+    var v = vById[b.dataset.profile];
+    if (v) A.modal(v.name, profile(v));
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

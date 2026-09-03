@@ -1,0 +1,6 @@
+# backups / scratch
+*.bak
+cms/*.bak
+.DS_Store
+node_modules/
+.claude/launch.json

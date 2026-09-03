@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buyer — Antaraal</title>
+<meta name="description" content="Active buyer tenders on Antaraal. Vendors can apply or place a bid.">
+<link rel="icon" href="m/antaraal-logo.png">
+<link rel="stylesheet" href="app/app.css?v=10">
+</head>
+<body>
+<main id="app">
+  <div class="wrap">
+
+    <div class="phead">
+      <p class="phead__kicker">Demand</p>
+      <h1>Buyer</h1>
+      <p>Live procurement tenders from airlines, MROs and defense teams. Verified vendors
+         can apply to supply, or place a competitive bid.</p>
+    </div>
+
+    <section>
+      <h2 class="section-title">Active tenders <span class="muted" id="count"></span></h2>
+      <div class="grid grid--2" id="tenders"></div>
+    </section>
+
+  </div>
+</main>
+
+<script src="app/data.js?v=10"></script>
+<script src="app/app.js?v=10"></script>
+<script>
+(function () {
+  var A = window.Antaraal, D = A.data;
+  var tenders = D.tenders || [];
+
+  function card(t) {
+    var d = A.daysLeft(t.deadline);
+    var deadline = A.fmtDate(t.deadline) + (isFinite(d)
+      ? '  ·  <b>' + (d >= 0 ? d + " day" + (d === 1 ? "" : "s") + " left" : "closed") + "</b>"
+      : "");
+    var mine = A.Store.get("tenders:" + t.id, {});
+    return (
+      '<article class="card tender" id="' + A.esc(t.id) + '">' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          '<span class="badge badge--open">Open</span>' +
+          (t.private ? '<span class="badge badge--private">Private company</span>' : "") +
+        "</div>" +
+        '<h3 class="card__title">' + A.esc(t.title) + "</h3>" +
+        '<p class="muted" style="margin:0;font-size:14px">' + A.esc(t.summary || "") + "</p>" +
+        '<div class="tender__row">' +
+          "<span>Buyer <b>" + A.esc(t.buyer) + "</b></span>" +
+          "<span>Capacity <b>" + A.esc(t.capacity || "—") + "</b></span>" +
+          "<span>Quantity <b>" + A.esc(t.quantity || "—") + "</b></span>" +
+          "<span>Deliver to <b>" + A.esc(t.location || "—") + "</b></span>" +
+        "</div>" +
+        '<div class="tender__row"><span>Closes ' + deadline + "</span></div>" +
+        '<div class="tender__foot">' +
+          '<button class="btn btn--ghost btn--sm" data-act="apply" data-id="' + A.esc(t.id) + '">Apply to supply</button>' +
+          '<button class="btn btn--green btn--sm" data-act="bid" data-id="' + A.esc(t.id) + '">Place a bid</button>' +
+          (mine.applied || mine.bid
+            ? '<span class="muted" style="font-size:12px;align-self:center">' +
+                (mine.bid ? "Bid submitted" : "Application sent") + "</span>"
+            : "") +
+        "</div>" +
+      "</article>"
+    );
+  }
+
+  function form(t, kind) {
+    var wrap = A.h('<form class="form" style="margin-top:14px"></form>');
+    wrap.innerHTML =
+      '<p class="muted" style="margin:0;font-size:14px">' + A.esc(t.title) + " — " + A.esc(t.buyer) + "</p>" +
+      '<div class="field"><label>Company name</label><input name="company" required></div>' +
+      '<div class="field"><label>Contact email</label><input name="email" type="email" required></div>' +
+      (kind === "bid"
+        ? '<div class="field field--2">' +
+            '<div class="field"><label>Bid price (total)</label><input name="price" required placeholder="₹ / USD"></div>' +
+            '<div class="field"><label>Lead time</label><input name="lead" required placeholder="e.g. 6 weeks"></div>' +
+          "</div>"
+        : '<div class="field"><label>What can you supply?</label><input name="offer" required></div>') +
+      '<div class="field"><label>Notes</label><textarea name="notes" placeholder="Certifications, trace, capacity…"></textarea></div>' +
+      '<button class="btn btn--green" type="submit">' +
+        (kind === "bid" ? "Submit bid" : "Send application") + "</button>" +
+      '<p class="form__note">Saved to this browser for the demo. Connect an API to receive submissions.</p>';
+
+    wrap.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var fd = {}; new FormData(wrap).forEach(function (v, k) { fd[k] = v; });
+      A.Store.push("tender-" + kind + "s", Object.assign({ tenderId: t.id }, fd));
+      A.Store.push("tenders:" + t.id, {}); // touch
+      var flag = {}; flag[kind === "bid" ? "bid" : "applied"] = true;
+      localStorage.setItem("antaraal:tenders:" + t.id, JSON.stringify(flag));
+      m.close();
+      render();
+      var done = A.h('<div class="done"><h3>' +
+        (kind === "bid" ? "Bid received" : "Application sent") +
+        '</h3><p>The buyer will see your submission. You can track it from your dashboard once connected.</p></div>');
+      document.getElementById(t.id).appendChild(done);
+      done.scrollIntoView({ block: "center" });
+    });
+    return wrap;
+  }
+
+  var m;
+  document.getElementById("tenders").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]"); if (!b) return;
+    var t = tenders.find(function (x) { return x.id === b.dataset.id; });
+    var kind = b.dataset.act === "bid" ? "bid" : "apply";
+    m = A.modal(kind === "bid" ? "Place a bid" : "Apply to supply", form(t, kind));
+  });
+
+  function render() {
+    document.getElementById("count").textContent = tenders.length ? "(" + tenders.length + ")" : "";
+    document.getElementById("tenders").innerHTML = tenders.length
+      ? tenders.map(card).join("")
+      : '<div class="empty">No active tenders. Add rows in <code>app/data.js</code>.</div>';
+    if (location.hash) {
+      var el = document.getElementById(location.hash.slice(1));
+      if (el) el.scrollIntoView({ block: "center" });
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apply — Antaraal</title>
+<meta name="description" content="Apply to join Antaraal as a vendor or a buyer.">
+<link rel="icon" href="m/antaraal-logo.png">
+<link rel="stylesheet" href="app/app.css?v=10">
+</head>
+<body>
+<main id="app">
+  <div class="wrap">
+
+    <div class="phead">
+      <p class="phead__kicker">Join the network</p>
+      <h1>Apply</h1>
+      <p>Tell us whether you supply parts or source them. We'll take you to the right
+         form — it takes about two minutes.</p>
+    </div>
+
+    <section>
+      <div class="choice" id="choice">
+        <button class="choice__card" type="button" data-role="vendor" aria-pressed="false">
+          <h3>Apply as Vendor</h3>
+          <p>You manufacture, overhaul or distribute aerospace parts and want to reach
+             verified buyers.</p>
+        </button>
+        <button class="choice__card" type="button" data-role="buyer" aria-pressed="false">
+          <h3>Apply as Buyer</h3>
+          <p>You're an airline, MRO or defense team sourcing parts and raising RFQs.</p>
+        </button>
+      </div>
+
+      <div id="formHost"></div>
+    </section>
+
+  </div>
+</main>
+
+<script src="app/data.js?v=10"></script>
+<script src="app/app.js?v=10"></script>
+<script>
+(function () {
+  var A = window.Antaraal;
+  var host = document.getElementById("formHost");
+  var choice = document.getElementById("choice");
+
+  var FIELDS = {
+    vendor: [
+      { n: "company", l: "Company name", t: "text", req: true },
+      { n: "industry", l: "Field / industry", t: "text", req: true, ph: "e.g. Landing gear & braking systems" },
+      { n: "offer", l: "Products / services offered", t: "text", req: true },
+      { n: "contact", l: "Contact name", t: "text", req: true },
+      { n: "email", l: "Work email", t: "email", req: true },
+      { n: "phone", l: "Phone", t: "tel", req: false },
+      { n: "certs", l: "Certifications / approvals", t: "text", req: false, ph: "AS9100, DGCA, 145…" },
+      { n: "notes", l: "Anything else", t: "textarea", req: false },
+    ],
+    buyer: [
+      { n: "company", l: "Company name", t: "text", req: true },
+      { n: "industry", l: "Type of operation", t: "text", req: true, ph: "Airline / MRO / Defense" },
+      { n: "need", l: "Parts / services needed", t: "text", req: true },
+      { n: "contact", l: "Contact name", t: "text", req: true },
+      { n: "email", l: "Work email", t: "email", req: true },
+      { n: "phone", l: "Phone", t: "tel", req: false },
+      { n: "volume", l: "Typical procurement volume", t: "text", req: false, ph: "e.g. ₹5 Cr / quarter" },
+      { n: "notes", l: "Anything else", t: "textarea", req: false },
+    ],
+  };
+
+  function field(f) {
+    var input = f.t === "textarea"
+      ? '<textarea name="' + f.n + '"' + (f.ph ? ' placeholder="' + f.ph + '"' : "") + (f.req ? " required" : "") + "></textarea>"
+      : '<input name="' + f.n + '" type="' + f.t + '"' + (f.ph ? ' placeholder="' + f.ph + '"' : "") + (f.req ? " required" : "") + ">";
+    return '<div class="field"><label>' + f.l + (f.req ? "" : " <span class='muted'>(optional)</span>") + "</label>" + input + "</div>";
+  }
+
+  function showForm(role) {
+    Array.prototype.forEach.call(choice.children, function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.role === role));
+    });
+    var title = role === "vendor" ? "Vendor application" : "Buyer application";
+    var f = A.h('<form class="form"></form>');
+    f.innerHTML =
+      '<h2 class="section-title" style="margin-bottom:4px">' + title + "</h2>" +
+      FIELDS[role].map(field).join("") +
+      '<button class="btn btn--green" type="submit">Submit application</button>' +
+      '<p class="form__note">Saved to this browser for the demo — no data is sent anywhere yet. ' +
+      "Wire up an endpoint to start receiving applications.</p>";
+
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var data = {}; new FormData(f).forEach(function (v, k) { data[k] = v; });
+      A.Store.push("applications:" + role, data);
+      host.innerHTML = "";
+      host.appendChild(A.h(
+        '<div class="done"><h3>Application received</h3>' +
+        "<p>Thanks, " + A.esc(data.contact || data.company) + ". Our team reviews new " +
+        role + " applications within two business days. We'll email " +
+        A.esc(data.email) + ".</p></div>"
+      ));
+      choice.querySelectorAll(".choice__card").forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      window.scrollTo({ top: host.offsetTop - 80, behavior: "smooth" });
+    });
+
+    host.innerHTML = "";
+    host.appendChild(f);
+    window.scrollTo({ top: host.offsetTop - 80, behavior: "smooth" });
+  }
+
+  choice.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-role]"); if (!b) return;
+    showForm(b.dataset.role);
+  });
+})();
+</script>
+</body>
+</html>

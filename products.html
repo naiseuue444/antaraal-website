@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Products — Antaraal</title>
+<meta name="description" content="Browse the aerospace product catalogue by category and find verified suppliers in each field.">
+<link rel="icon" href="m/antaraal-logo.png">
+<link rel="stylesheet" href="app/app.css?v=10">
+</head>
+<body>
+<main id="app">
+  <div class="wrap">
+
+    <div class="phead">
+      <p class="phead__kicker">Catalogue</p>
+      <h1>Products</h1>
+      <p>Browse the aerospace catalogue by category. Every category opens the verified
+         suppliers who work in that field.</p>
+      <div class="catstat" id="catstat"></div>
+    </div>
+
+    <div class="catbar">
+      <form class="search" id="searchForm" role="search">
+        <input class="search__input" id="q" type="search"
+               placeholder="Search categories — e.g. castings, avionics, harness…" autocomplete="off">
+        <button class="search__btn" type="submit">Search</button>
+        <button class="search__btn search__btn--ghost" type="reset" id="clear" hidden>Clear</button>
+      </form>
+      <nav class="azbar" id="azbar" aria-label="Jump to letter"></nav>
+    </div>
+
+    <section id="directory"></section>
+
+  </div>
+</main>
+
+<script src="app/categories.js?v=10"></script>
+<script src="app/vendors.js?v=10"></script>
+<script src="app/data.js?v=10"></script>
+<script src="app/app.js?v=10"></script>
+<script>
+(function () {
+  var A = window.Antaraal;
+
+  /* live supplier count per category, from the real vendor data */
+  var norm = function (s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, ""); };
+  var live = {};
+  (window.ANTARAAL_VENDORS || []).forEach(function (v) {
+    (v.categories || []).forEach(function (c) { live[norm(c)] = (live[norm(c)] || 0) + 1; });
+  });
+
+  var CATS = (window.ANTARAAL_CATEGORIES || []).slice()
+    .map(function (c) {
+      return { name: c.name, suppliers: live[norm(c.name)] != null ? live[norm(c.name)] : (c.suppliers || 0) };
+    })
+    .sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
+
+  var vendorCount = (window.ANTARAAL_VENDORS || []).length;
+  document.getElementById("catstat").innerHTML =
+    "<span><b>" + CATS.length + "</b> categories</span>" +
+    (vendorCount ? "<span><b>" + vendorCount + "</b> listed suppliers</span>" : "") +
+    "<span><b>Pan-India</b> network</span>";
+
+  function letterOf(name) {
+    var c = name.trim().charAt(0).toUpperCase();
+    return /[A-Z]/.test(c) ? c : "#";
+  }
+  function slug(s) { return "cat-" + s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+  function catHref(name) { return "vendors.html?field=" + encodeURIComponent(name); }
+
+  var groups = {};
+  CATS.forEach(function (c) {
+    var L = letterOf(c.name);
+    (groups[L] = groups[L] || []).push(c);
+  });
+  var LETTERS = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+  /* A–Z jump bar */
+  var azbar = document.getElementById("azbar");
+  azbar.innerHTML = LETTERS.map(function (L) {
+    var has = groups[L] && groups[L].length;
+    return '<a class="az' + (has ? "" : " az--off") + '"' +
+      (has ? ' href="#g-' + (L === "#" ? "num" : L) + '"' : "") + ">" + L + "</a>";
+  }).join("");
+
+  var dir = document.getElementById("directory");
+
+  function catRow(c) {
+    return '<a class="catrow" href="' + catHref(c.name) + '">' +
+      '<span class="catrow__name">' + A.esc(c.name) + "</span>" +
+      '<span class="catrow__count">' + (c.suppliers || 0) + "</span>" +
+    "</a>";
+  }
+
+  function renderFull() {
+    document.getElementById("clear").hidden = true;
+    azbar.hidden = false;
+    dir.innerHTML = LETTERS.filter(function (L) { return groups[L]; }).map(function (L) {
+      var id = "g-" + (L === "#" ? "num" : L);
+      return '<div class="catgroup" id="' + id + '">' +
+        '<h2 class="catgroup__letter">' + L + '<span>' + groups[L].length + "</span></h2>" +
+        '<div class="catgrid">' + groups[L].map(catRow).join("") + "</div>" +
+      "</div>";
+    }).join("");
+  }
+
+  function renderSearch(q) {
+    document.getElementById("clear").hidden = false;
+    azbar.hidden = true;
+    var s = q.toLowerCase();
+    var hits = CATS.filter(function (c) { return c.name.toLowerCase().indexOf(s) > -1; });
+    dir.innerHTML =
+      '<h2 class="section-title">' + hits.length + ' categor' + (hits.length === 1 ? "y" : "ies") +
+        ' matching "' + A.esc(q) + '"</h2>' +
+      (hits.length
+        ? '<div class="catgrid catgrid--flat">' + hits.map(catRow).join("") + "</div>"
+        : '<div class="empty">No category matches. Try a broader term, or ' +
+          '<a href="apply.html">apply to list a new field</a>.</div>');
+  }
+
+  var input = document.getElementById("q");
+  function run() {
+    var q = input.value.trim();
+    if (q) renderSearch(q); else renderFull();
+  }
+  document.getElementById("searchForm").addEventListener("submit", function (e) { e.preventDefault(); run(); });
+  document.getElementById("searchForm").addEventListener("reset", function () {
+    setTimeout(function () { input.value = ""; run(); input.focus(); }, 0);
+  });
+  var t;
+  input.addEventListener("input", function () { clearTimeout(t); t = setTimeout(run, 140); });
+
+  renderFull();
+})();
+</script>
+</body>
+</html>
