@@ -4,3 +4,6 @@ cms/*.bak
 .DS_Store
 node_modules/
 .claude/launch.json
+
+*.pretheme
+*.orig
