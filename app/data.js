@@ -80,7 +80,7 @@ window.ANTARAAL_DATA = {
      TENDERS  (Buyer page)  — 2 to 3 active tenders
        id            unique slug
        title         what the buyer needs
-       buyer         buyer / airline / MRO name
+       buyer         buyer / airline / operator name
        private       true  -> "Private company" badge
        capacity      buyer's stated procurement capacity / volume
        quantity      quantity required
@@ -90,10 +90,10 @@ window.ANTARAAL_DATA = {
      ---------------------------------------------------------------------- */
   tenders: [
     { id:"t-brake-batch", title:"Brake assemblies — A320 family, 60 units",
-      buyer:"IndeAir MRO", private:false,
+      buyer:"IndeAir Fleet Services", private:false,
       capacity:"₹8–12 Cr / quarter", quantity:"60 units", deadline:"2026-10-15",
       location:"Delhi (DEL)",
-      summary:"Overhauled or new main wheel brake assemblies with full trace and 8130-3." },
+      summary:"New or serviceable main wheel brake assemblies with full trace and 8130-3." },
 
     { id:"t-avionics-fit", title:"VHF Nav/Comm retrofit — 12 aircraft",
       buyer:"Confidential regional carrier", private:true,

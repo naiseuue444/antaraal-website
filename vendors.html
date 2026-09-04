@@ -6,7 +6,7 @@
 <title>Vendor — Antaraal</title>
 <meta name="description" content="Verified aerospace suppliers with certifications, capabilities and full profiles.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=10">
+<link rel="stylesheet" href="app/app.css?v=14">
 </head>
 <body>
 <main id="app">
@@ -49,9 +49,9 @@
   </div>
 </main>
 
-<script src="app/vendors.js?v=10"></script>
-<script src="app/data.js?v=10"></script>
-<script src="app/app.js?v=10"></script>
+<script src="app/vendors.js?v=14"></script>
+<script src="app/data.js?v=14"></script>
+<script src="app/app.js?v=14"></script>
 <script>
 (function () {
   var A = window.Antaraal;
@@ -165,10 +165,12 @@
           "</div>" +
         "</div>" +
         (v.certText ? '<div class="prof__row"><span class="prof__k">Certifications</span><span>' + A.esc(v.certText) + "</span></div>" : "") +
-        '<div class="prof__row"><span class="prof__k">Categories</span><span class="prof__tags">' +
-          (v.categories || []).map(function (c) {
-            return '<a class="minitag" href="vendors.html?field=' + encodeURIComponent(c) + '">' + A.esc(c) + "</a>";
-          }).join("") + "</span></div>" +
+        ((v.categories || []).length
+          ? '<div class="prof__row"><span class="prof__k">Categories</span><span class="prof__tags">' +
+            v.categories.map(function (c) {
+              return '<a class="minitag" href="vendors.html?field=' + encodeURIComponent(c) + '">' + A.esc(c) + "</a>";
+            }).join("") + "</span></div>"
+          : "") +
         (v.website ? '<div class="prof__row"><span class="prof__k">Website</span><a href="' + A.esc(v.website) + '" target="_blank" rel="noopener">' + A.esc(v.websiteLabel || v.website) + "</a></div>" : "") +
         (v.contact ? '<div class="prof__row"><span class="prof__k">Contact</span><span>' + A.esc(v.contact) + "</span></div>" : "") +
         (v.activities ? '<div class="prof__act"><span class="prof__k">Activities</span><p>' + A.esc(v.activities).replace(/\n\n/g, "</p><p>") + "</p></div>" : "") +

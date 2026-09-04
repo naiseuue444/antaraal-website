@@ -298,9 +298,7 @@ window.ANTARAAL_VENDORS = [
   "certifications": [
    "ISO 9001:2015 & AS 9100 D"
   ],
-  "categories": [
-   "MRO"
-  ],
+  "categories": [],
   "activities": "MRO Services for Slides/slide rafts all part numbers applicable to B-737, A319/320/321, B-777, A-330/340, life rafts, life vest, fire extinguishers, overhaul of various pressure vessels eg CO2, N2, O2, Helium, Halon 1211, 1301, 2402, overhauling of regulators, of Boeing, Airbus, ATR, Bombardier etc. Integration & structure repair, modifications, design/development and manufacture of critical components like Radome, flight control surfaces, indigenization of the spares for Defense. Certifications: ISO 9001:2008, DGCA- CAR145, EASA Part-145, DOT(US), AQMS 9110, DGCA-CAR-M, DGCA-NSOP(Non-Schedule Operating Permit)",
   "logo": "app/logos/aman-aviation-aerospace-solutions.jpg",
   "verified": true
@@ -3566,9 +3564,7 @@ window.ANTARAAL_VENDORS = [
   "certifications": [
    "ISO 9001:2015AS9100D– Under implimentation"
   ],
-  "categories": [
-   "MRO Tooling"
-  ],
+  "categories": [],
   "activities": "MPT Aero's multidisciplinary team comprising of mechanical engineers, design engineers, aerospace specialists, fabrication experts, and skilled machinists with deep experience across high-precision manufacturing domains. Exceptional Talents are hired from leading institutions such as CITD and the Indo-German Tool Room, ensuring that only the best-trained professionals join our workforce. Through continuous training, process refinement, and a culture built around engineering excellence, we ensure that quality at MPT is not just a deliverable—it is a deeply embedded organisational culture.",
   "logo": "app/logos/masters-preci-tools-private-limited-mpt-aero.png",
   "verified": true
@@ -3582,9 +3578,7 @@ window.ANTARAAL_VENDORS = [
   "address": "Hangar No. C1, Juhu Aerodrome, Juhu, Mumbai - 400 054, Maharashtra, India",
   "certText": "",
   "certifications": [],
-  "categories": [
-   "MRO"
-  ],
+  "categories": [],
   "activities": "Airborne Mission System Installation, Integration and Structural Repairs / modifications | Design, Development, Manufacturing of Mechanical Interfaces, Adaptors, Mounting brackets and radomes including stress analysis and their installation on aircraft | Manufacturing of Harnesses and their installation on aircraft | Ground testing of the system on aircraft as per OEM specification | Up-gradation of Aircraft systems and components | Up-gradation and Role modification of Aircraft | Design and manufacture of Avionics Test Benches and Aircraft Mock-up | Aircraft cabin crew training mock - ups | Establishment of MRO facility for heavy maintenance of Aircraft | Maintenance / Repair / Overhaul and Testing of Aircraft components and systems.",
   "logo": "app/logos/max-aerospace-aviation-ltd.jpg",
   "verified": false
@@ -4899,9 +4893,7 @@ window.ANTARAAL_VENDORS = [
   "address": "18 Loyang Lane, Singapore 508918",
   "certText": "",
   "certifications": [],
-  "categories": [
-   "MRO"
-  ],
+  "categories": [],
   "activities": "Rockwell Collins in Singapore provides maintenance, repair, overhaul engineering and sales in support of our commercial and military customers in the Asia Pacific region. It also is a full repair and workshop facility, servicing more than 1,000 products within our air transport, business regional, in-flight entertainment and Government Systems areas.",
   "logo": "app/logos/rockwell-collins-southeast-asia-pte-ltd.jpg",
   "verified": false
@@ -6004,9 +5996,7 @@ window.ANTARAAL_VENDORS = [
    "AS 9100 B",
    "NADCAP"
   ],
-  "categories": [
-   "MRO"
-  ],
+  "categories": [],
   "activities": "Part of the Pune based Indian Seamless group, TAAL was established in 1994 as the first private sector company in the country to manufacture general aviation i.e. non-military aircraft. The company's vision at the time was to create a nucleus facility for the development of an aeronautical industry in India and in particular to promote affordable general aviation in the country. To kick-off this process, TAAL entered into a collaboration with Partenavia of Italy to manufacture the six-seat twin piston-engine P68C aircraft and the eleven-seat twin turbo-prop Viator aircraft.\n\nWhile manufacture of Light Transport and Trainer Aircraft continues to be in TAAL’s capability, the company has since diversified its activities and has established a significant presence in many segments of the aviation and aeronautical industries in India.\n\nTAAL is into all Aviation related business activities namely, Aircraft Manufacturing & Maintenance Centre and Aviation Infrastructure - Airfield & MRO.",
   "logo": "app/logos/taneja-aerospace-and-aviation-ltd.jpg",
   "verified": true

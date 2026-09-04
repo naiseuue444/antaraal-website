@@ -6,7 +6,7 @@
 <title>Buyer — Antaraal</title>
 <meta name="description" content="Active buyer tenders on Antaraal. Vendors can apply or place a bid.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=10">
+<link rel="stylesheet" href="app/app.css?v=14">
 </head>
 <body>
 <main id="app">
@@ -15,20 +15,20 @@
     <div class="phead">
       <p class="phead__kicker">Demand</p>
       <h1>Buyer</h1>
-      <p>Live procurement tenders from airlines, MROs and defense teams. Verified vendors
-         can apply to supply, or place a competitive bid.</p>
+      <p>Sample procurement tenders showing how buyers post requirements. Verified vendors
+         apply to supply, or place a competitive bid.</p>
     </div>
 
     <section>
-      <h2 class="section-title">Active tenders <span class="muted" id="count"></span></h2>
+      <h2 class="section-title">Example tenders <span class="muted" id="count"></span></h2>
       <div class="grid grid--2" id="tenders"></div>
     </section>
 
   </div>
 </main>
 
-<script src="app/data.js?v=10"></script>
-<script src="app/app.js?v=10"></script>
+<script src="app/data.js?v=14"></script>
+<script src="app/app.js?v=14"></script>
 <script>
 (function () {
   var A = window.Antaraal, D = A.data;
@@ -111,7 +111,7 @@
   });
 
   function render() {
-    document.getElementById("count").textContent = tenders.length ? "(" + tenders.length + ")" : "";
+    document.getElementById("count").textContent = "";
     document.getElementById("tenders").innerHTML = tenders.length
       ? tenders.map(card).join("")
       : '<div class="empty">No active tenders. Add rows in <code>app/data.js</code>.</div>';

@@ -6,7 +6,7 @@
 <title>Apply — Antaraal</title>
 <meta name="description" content="Apply to join Antaraal as a vendor or a buyer.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=10">
+<link rel="stylesheet" href="app/app.css?v=14">
 </head>
 <body>
 <main id="app">
@@ -23,12 +23,12 @@
       <div class="choice" id="choice">
         <button class="choice__card" type="button" data-role="vendor" aria-pressed="false">
           <h3>Apply as Vendor</h3>
-          <p>You manufacture, overhaul or distribute aerospace parts and want to reach
+          <p>You manufacture or distribute aerospace parts and want to reach
              verified buyers.</p>
         </button>
         <button class="choice__card" type="button" data-role="buyer" aria-pressed="false">
           <h3>Apply as Buyer</h3>
-          <p>You're an airline, MRO or defense team sourcing parts and raising RFQs.</p>
+          <p>You're an airline, operator or defense team sourcing parts and raising RFQs.</p>
         </button>
       </div>
 
@@ -38,8 +38,8 @@
   </div>
 </main>
 
-<script src="app/data.js?v=10"></script>
-<script src="app/app.js?v=10"></script>
+<script src="app/data.js?v=14"></script>
+<script src="app/app.js?v=14"></script>
 <script>
 (function () {
   var A = window.Antaraal;
@@ -59,7 +59,7 @@
     ],
     buyer: [
       { n: "company", l: "Company name", t: "text", req: true },
-      { n: "industry", l: "Type of operation", t: "text", req: true, ph: "Airline / MRO / Defense" },
+      { n: "industry", l: "Type of operation", t: "text", req: true, ph: "Airline / Operator / Defense" },
       { n: "need", l: "Parts / services needed", t: "text", req: true },
       { n: "contact", l: "Contact name", t: "text", req: true },
       { n: "email", l: "Work email", t: "email", req: true },
