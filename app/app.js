@@ -22,10 +22,15 @@
              "Bangalore North, Bangalore 560008, Karnataka, India",
     email: "support@antaraalspace.com",
     phone: "9036548611",
-    /* TODO: replace with the official company handles when confirmed */
-    linkedin: "https://www.linkedin.com/company/antaraal",
-    instagram: "https://www.instagram.com/antaraal"
+    linkedin: "https://www.linkedin.com/company/antaraal-space/",
+    instagram: "https://www.instagram.com/antaraalspace"
   };
+
+  /* Vendor verification is NOT live yet — until Antaraal has actually run its
+     checks, no supplier is shown as "Verified" and the verified counts read 0.
+     Every profile still shows its full details (certifications included).
+     Flip this to true to switch the badges + counts back on.                */
+  var VERIFICATION_LIVE = false;
 
   var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
 
@@ -50,16 +55,20 @@
   function stats() {
     var v = vendorList();
     if (v) {
-      var verified = v.filter(function (x) { return x.verified; }).length;
-      var caps = {}, locs = {};
+      var verified = VERIFICATION_LIVE ? v.filter(function (x) { return x.verified; }).length : 0;
+      var caps = {}, locs = {}, certified = 0;
       v.forEach(function (x) {
         (x.categories || []).forEach(function (c) { caps[c] = 1; });
         if (x.location) locs[x.location] = 1;
+        if (x.certLevel && x.certLevel !== "none") certified++;
       });
       return { vendors: v.length, verified: verified, pending: v.length - verified,
-               capabilities: Object.keys(caps).length, locations: Object.keys(locs).length };
+               capabilities: Object.keys(caps).length, locations: Object.keys(locs).length,
+               certified: certified };
     }
-    return window.ANTARAAL_STATS || { vendors: 0, verified: 0, pending: 0, capabilities: 0, locations: 0 };
+    var base = window.ANTARAAL_STATS || { vendors: 0, verified: 0, pending: 0, capabilities: 0, locations: 0, certified: 0 };
+    if (!VERIFICATION_LIVE) base = Object.assign({}, base, { verified: 0, pending: base.vendors });
+    return base;
   }
 
   /* ---------- tiny local store ---------- */
@@ -121,7 +130,7 @@
         '<div class="foot__top">' +
           '<div class="foot__brand">' +
             '<a class="foot__logo" href="index.html"><img src="' + LOGO + '" alt="Antaraal"></a>' +
-            '<p>' + esc(COMPANY.tagline) + '. <b>' + s.vendors + '</b> suppliers, <b>' + s.verified + '</b> aerospace-verified.</p>' +
+            '<p>' + esc(COMPANY.tagline) + '. <b>' + s.vendors + '</b> suppliers listed across <b>' + s.locations + '</b> locations.</p>' +
             socialRow() +
           "</div>" +
           '<div class="foot__links">' +
@@ -158,19 +167,41 @@
     "</address>";
   }
 
-  /* ---------- inject a company block after the Framer homepage footer ---------- */
+  /* ---------- inject the company / contact band on the Framer homepage ---------- */
   function homeFooterCompany() {
     var f = document.querySelector("footer:not(.foot)");
     if (!f) return;
     /* place it as a sibling AFTER the Framer footer so hydration can't wipe it */
     var anchor = f.parentElement || document.body;
     if (anchor.querySelector(":scope > .az-home-company")) return;
+    var phoneDigits = COMPANY.phone.replace(/\D/g, "");
+    var year = new Date().getFullYear();
     var wrap = h(
       '<div class="az-home-company"><div class="az-home-company__inner">' +
-        "<div>" + socialRow() + companyCard() + "</div>" +
-        '<small>&copy; ' + new Date().getFullYear() + " " + esc(COMPANY.name) +
-          '. <a href="#" data-az-cookie-settings>Cookie preferences</a></small>' +
-      "</div></div>"
+        '<div class="azc-col azc-brand">' +
+          '<a class="azc-logo" href="index.html"><img src="' + LOGO + '" alt="Antaraal"></a>' +
+          "<p>" + esc(COMPANY.tagline) + ".</p>" +
+          socialRow() +
+        "</div>" +
+        '<div class="azc-col">' +
+          '<span class="foot__k">Registered office</span>' +
+          "<p>" + esc(COMPANY.address) + "</p>" +
+        "</div>" +
+        '<div class="azc-col">' +
+          '<span class="foot__k">Contact</span>' +
+          '<a href="mailto:' + esc(COMPANY.email) + '">' + esc(COMPANY.email) + "</a>" +
+          '<a href="tel:+91' + esc(phoneDigits) + '">+91 ' + esc(COMPANY.phone) + "</a>" +
+        "</div>" +
+      "</div>" +
+      '<div class="az-home-company__bar">' +
+        "<small>&copy; " + year + " " + esc(COMPANY.name) + ". All rights reserved.</small>" +
+        '<small class="azc-legal">' +
+          '<a href="#" data-az-cookie-settings>Cookie preferences</a>' +
+        "</small>" +
+      "</div>" +
+      '<a class="azc-bigmark" href="index.html" aria-label="Antaraal home">' +
+        '<img src="' + LOGO + '" alt="Antaraal"></a>' +
+      "</div>"
     );
     if (f.nextSibling) anchor.insertBefore(wrap, f.nextSibling);
     else anchor.appendChild(wrap);
@@ -192,6 +223,7 @@
       "listed suppliers": Math.floor(s.vendors / 10) * 10,
       "suppliers": Math.floor(s.vendors / 10) * 10,
       "aerospace-verified": s.verified,
+      "quality-certified": s.certified,
       "capabilities": s.capabilities,
       "locations": s.locations
     };
@@ -277,7 +309,7 @@
   /* ---------- general-query chat ---------- */
   var KB = [
     { q: /what is antaraal|about (antaraal|this)|who are you/i,
-      a: "Antaraal is an aerospace supply-chain platform. Buyers discover and shortlist verified aerospace " +
+      a: "Antaraal is an aerospace supply-chain platform. Buyers discover and shortlist aerospace " +
          "vendors by capability and certification; vendors list their manufacturing and special-process " +
          "capabilities and respond to RFQs." },
     { q: /how (do i|to).*(apply|join|register|list)|become a (vendor|supplier)/i,
@@ -287,11 +319,12 @@
     { q: /buyer|source|find (a )?(vendor|supplier)|rfq|tender/i,
       a: "Browse <a href='products.html'>Products</a> by capability, or the full <a href='vendors.html'>Vendor</a> " +
          "directory with certification and location filters. Post a requirement on the " +
-         "<a href='buyers.html'>Buyer</a> page and verified vendors can apply or bid." },
+         "<a href='buyers.html'>Buyer</a> page and listed vendors can apply or bid." },
     { q: /verif|certif|as ?9100|nadcap/i,
-      a: "A vendor is marked <b>Verified</b> only when it holds a recognised aerospace quality approval " +
-         "(AS/EN 9100, AS 9120, NADCAP, CEMILAC or CAR/EASA Part-145). Vendors with only ISO 9001, or no " +
-         "published certification, are shown as pending verification." },
+      a: "Antaraal's own vendor verification is not live yet, so every supplier currently shows as " +
+         "<b>pending verification</b>. Each profile still lists the certifications the supplier has " +
+         "published (AS/EN 9100, AS 9120, NADCAP, ISO 9001, CEMILAC, CAR/EASA Part-145 and so on) so you " +
+         "can assess them directly. Verified badges will return once our checks are complete." },
     { q: /lead ?time|delivery|how long|turnaround/i,
       a: "Each vendor profile shows typical lead time and on-time-delivery where the vendor has published it. " +
          "Firm lead and delivery dates are always confirmed per RFQ — request a quote to get committed dates." },
@@ -408,11 +441,25 @@
       ".foot__bar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}",
       ".foot__bar a{color:rgba(255,255,255,.45)}.foot__bar a:hover{color:#fff}",
       "@media(max-width:820px){.foot .foot__top{grid-template-columns:1fr;gap:26px}}",
-      /* homepage company block */
-      ".az-home-company{background:#0c1226;color:rgba(255,255,255,.62);padding:34px 24px;font-family:'Inter',system-ui,sans-serif}",
-      ".az-home-company__inner{max-width:1160px;margin:0 auto;display:flex;flex-wrap:wrap;gap:18px 40px;align-items:flex-start;justify-content:space-between}",
-      ".az-home-company .foot__social{margin-bottom:14px}",
-      ".az-home-company .foot__company{max-width:52ch}",
+      /* homepage company / contact band — white text on the wine footer,
+         forced below the Framer footer (which carries order:1003) */
+      ".az-home-company{order:1004;background:#5E2140;color:rgba(255,255,255,.78);padding:48px 24px 34px;font-family:'Inter',system-ui,sans-serif;font-size:13.5px;line-height:1.65;border-top:1px solid rgba(255,255,255,.16)}",
+      ".az-home-company__inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.5fr 1.3fr 1fr;gap:30px 48px;align-items:start}",
+      ".az-home-company .azc-col{display:flex;flex-direction:column;gap:10px}",
+      ".az-home-company p{margin:0;color:rgba(255,255,255,.72);max-width:42ch}",
+      ".az-home-company a{color:#fff;text-decoration:none}",
+      ".az-home-company a:hover{text-decoration:underline}",
+      ".az-home-company .foot__k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5)}",
+      ".az-home-company .azc-logo img{height:26px;width:auto;filter:brightness(0) invert(1)}",
+      ".az-home-company .foot__social{margin-top:4px}",
+      ".az-home-company .foot__social a{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:9px;color:#fff}",
+      ".az-home-company .foot__social a:hover{background:rgba(255,255,255,.12)}",
+      ".az-home-company__bar{max-width:1160px;margin:26px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:rgba(255,255,255,.6)}",
+      ".az-home-company__bar .azc-legal{display:flex;gap:18px;flex-wrap:wrap}",
+      ".az-home-company__bar a{color:rgba(255,255,255,.75)}",
+      ".az-home-company .azc-bigmark{display:block;max-width:1160px;margin:30px auto 0;text-align:center}",
+      ".az-home-company .azc-bigmark img{height:clamp(44px,8vw,84px);width:auto;filter:brightness(0) invert(1);opacity:.92}",
+      "@media(max-width:820px){.az-home-company{padding:34px 22px 24px}.az-home-company__inner{grid-template-columns:1fr;gap:24px}.az-home-company__bar{flex-direction:column}}",
       /* cookie */
       ".az-cookie{position:fixed;left:16px;right:16px;bottom:16px;z-index:300;max-width:720px;margin:0 auto;background:#0c1226;color:#fff;border-radius:16px;padding:16px 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.55}",
       ".az-cookie__text{flex:1;min-width:220px;color:rgba(255,255,255,.8)}",
@@ -472,7 +519,8 @@
   window.Antaraal = {
     data: window.ANTARAAL_DATA || {},
     Store: Store, modal: modal, h: h, esc: esc, fmtDate: fmtDate, daysLeft: daysLeft,
-    stats: stats, COMPANY: COMPANY, openChat: chat
+    stats: stats, COMPANY: COMPANY, openChat: chat,
+    verificationLive: VERIFICATION_LIVE
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

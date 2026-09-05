@@ -22,11 +22,12 @@ const list = JSON.parse(src.slice(src.indexOf("["), src.lastIndexOf("]") + 1));
 
 const AERO = /\bAS\s?9100\b|\bAS\s?9110\b|\bAS\s?9120\b|\bEN\s?9100\b|\bEN\s?9110\b|NADCAP|CEMILAC|EASA\s?PART[- ]?145|CAR[- ]?145|AQMS\s?9110/i;
 
-let verified = 0;
+let verified = 0, certified = 0;
 const caps = new Set(), locs = new Set();
 for (const v of list) {
   const lvl = v.certLevel || (AERO.test(v.certText || "") ? "aerospace" : (v.certText ? "iso" : "none"));
   if (lvl === "aerospace") verified++;
+  if (lvl !== "none") certified++;
   (v.categories || []).forEach((c) => caps.add(c));
   if (v.location) locs.add(v.location);
 }
@@ -36,6 +37,7 @@ const S = {
   pending: list.length - verified,
   capabilities: caps.size,
   locations: locs.size,
+  certified,
 };
 
 /* ---- app/stats.js ---- */
@@ -51,9 +53,9 @@ const rounded = S.vendors >= 100 ? Math.floor(S.vendors / 10) * 10 : S.vendors;
 const capsN   = S.capabilities;
 const MAP = [
   ["Verified vendors", "Listed suppliers",   rounded, true],   // "+" suffix
-  ["Parts listed",     "Aerospace-verified", S.verified, false],
+  ["Parts listed",     "Quality-certified",  S.certified, false],
   ["Cities served",    "Locations",          S.locations, false],
-  ["Certifications",   "Aerospace-verified", S.verified, false],
+  ["Certifications",   "Quality-certified",  S.certified, false],
 ];
 // "Capabilities" keeps its label, just the number
 const NUMS = [
@@ -70,13 +72,13 @@ function patchModule(file) {
   // first-group targetValues by (now-updated) label proximity is fiddly; instead
   // rewrite the four known targetValues in document order: 500,1200,12  + 30 + 500,25,8
   s = s.replace(/targetValue:500,/g, "targetValue:" + rounded + ",");
-  s = s.replace(/targetValue:1200,/g, "targetValue:" + S.verified + ",");
+  s = s.replace(/targetValue:1200,/g, "targetValue:" + S.certified + ",");
   s = s.replace(/targetValue:12,/g, "targetValue:" + S.locations + ",");
   s = s.replace(/targetValue:30,/g, "targetValue:" + capsN + ",");
   s = s.replace(/UIKsWXOdN:500,/g, "UIKsWXOdN:" + rounded + ",");
-  s = s.replace(/UIKsWXOdN:25,/g, "UIKsWXOdN:" + S.verified + ",");
+  s = s.replace(/UIKsWXOdN:25,/g, "UIKsWXOdN:" + S.certified + ",");
   s = s.replace(/UIKsWXOdN:8,/g, "UIKsWXOdN:" + S.locations + ",");
-  s = s.replace(/nkGqvTHvs:`Certifications`/g, "nkGqvTHvs:`Aerospace-verified`");
+  s = s.replace(/nkGqvTHvs:`Certifications`/g, "nkGqvTHvs:`Quality-certified`");
   s = s.replace(/nkGqvTHvs:`Regions`/g, "nkGqvTHvs:`Locations`");
   s = s.replace(/nkGqvTHvs:`Vendors`/g, "nkGqvTHvs:`Suppliers`");
   fs.writeFileSync(file, s);
@@ -90,12 +92,12 @@ function patchSSR(file) {
     s = s.split(">" + oldL + "</p>").join(">" + newL + "</p>");
   }
   s = s.replace(/nowrap">500<!-- -->\+<\/span>/g, 'nowrap">' + rounded + '<!-- -->+</span>');
-  s = s.replace(/nowrap">1200<!-- -->\+<\/span>/g, 'nowrap">' + S.verified + "</span>");
+  s = s.replace(/nowrap">1200<!-- -->\+<\/span>/g, 'nowrap">' + S.certified + "</span>");
   s = s.replace(/nowrap">12<\/span>/g, 'nowrap">' + S.locations + "</span>");
   s = s.replace(/nowrap">30<\/span>/g, 'nowrap">' + capsN + "</span>");
-  s = s.replace(/nowrap">25<!-- -->\+<\/span>/g, 'nowrap">' + S.verified + "</span>");
+  s = s.replace(/nowrap">25<!-- -->\+<\/span>/g, 'nowrap">' + S.certified + "</span>");
   s = s.replace(/nowrap">8<\/span>/g, 'nowrap">' + S.locations + "</span>");
-  s = s.replace(/>Certifications<\/p>/g, ">Aerospace-verified</p>");
+  s = s.replace(/>Certifications<\/p>/g, ">Quality-certified</p>");
   s = s.replace(/>Regions<\/p>/g, ">Locations</p>");
   s = s.replace(/>Vendors<\/p>/g, ">Suppliers</p>");
   fs.writeFileSync(file, s);

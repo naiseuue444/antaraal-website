@@ -6,7 +6,7 @@
 <title>Buyers — Antaraal</title>
 <meta name="description" content="How aerospace buyers publish requirements on Antaraal and how verified vendors respond.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=17">
+<link rel="stylesheet" href="app/app.css?v=19">
 </head>
 <body>
 <main id="app">
@@ -16,7 +16,7 @@
       <p class="phead__kicker">Aerospace demand</p>
       <h1>Buyers</h1>
       <p>How aerospace buyers post requirements on Antaraal. Airlines, operators, OEMs and
-         defence teams publish a spec; aerospace-verified vendors apply to supply or bid.</p>
+         defence teams publish a spec; listed aerospace vendors apply to supply or bid.</p>
       <div class="catstat" id="bstat"></div>
     </div>
 
@@ -28,9 +28,9 @@
   </div>
 </main>
 
-<script src="app/stats.js?v=17"></script>
-<script src="app/data.js?v=17"></script>
-<script src="app/app.js?v=17"></script>
+<script src="app/stats.js?v=19"></script>
+<script src="app/data.js?v=19"></script>
+<script src="app/app.js?v=19"></script>
 <script>
 (function () {
   var A = window.Antaraal, D = A.data;
@@ -40,7 +40,9 @@
   var bs = document.getElementById("bstat");
   if (bs) bs.innerHTML =
     '<span><b data-az-stat="vendors">' + s.vendors + "</b> suppliers can respond</span>" +
-    '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>" +
+    (A.verificationLive
+      ? '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>"
+      : "") +
     '<span><b data-az-stat="capabilities">' + s.capabilities + "</b> capabilities covered</span>";
 
   function card(t) {

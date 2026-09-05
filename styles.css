@@ -373,3 +373,58 @@ html,body{ background-color:#F3EDE0; }
 /* News/blog category pill: white text on the wine pill */
 [data-framer-name="Blog Tag Wrapper"] .framer-text,
 [data-framer-name="Blog Tag Wrapper"] p{ color:#ffffff !important; }
+
+/* ================= Homepage footer: one wine panel, white text ================= */
+footer[data-framer-name="Footer"],
+footer.framer-qdbnlu{ background-color:#5E2140 !important; }
+
+footer[data-framer-name="Footer"] :is(h1,h2,h3,h4,h5,h6,a,span,li,label,div,p),
+footer[data-framer-name="Footer"] .framer-text{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+footer[data-framer-name="Footer"] p,
+footer[data-framer-name="Footer"] [data-framer-name="Footer Mid Content"] p{
+  color:rgba(255,255,255,.68) !important;
+  -webkit-text-fill-color:rgba(255,255,255,.68) !important;
+}
+footer[data-framer-name="Footer"] a:hover{ opacity:.75; }
+
+/* social icons -> white */
+footer[data-framer-name="Footer"] [data-framer-component-type="SVG"],
+footer[data-framer-name="Footer"] [data-framer-component-type="SVG"] *{
+  fill:#ffffff !important;
+  stroke:#ffffff !important;
+  color:#ffffff !important;
+}
+
+/* newsletter field on the wine ground */
+footer[data-framer-name="Footer"] input{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  background:transparent !important;
+  border-color:rgba(255,255,255,.45) !important;
+}
+footer[data-framer-name="Footer"] input::placeholder{
+  color:rgba(255,255,255,.6) !important;
+  -webkit-text-fill-color:rgba(255,255,255,.6) !important;
+}
+
+/* drop the stale "Overhaul" / blog link (MRO is out of scope) */
+footer[data-framer-name="Footer"] a[href="./blog"],
+footer[data-framer-name="Footer"] a[href*="/blog"]{ display:none !important; }
+
+/* the oversized template wordmark is replaced by the logo in the injected band */
+footer[data-framer-name="Footer"] > svg[data-framer-name="LOGO"],
+footer[data-framer-name="Footer"] .framer-15odsir{ display:none !important; }
+
+/* the template footer is a full-viewport block — collapse it to its content
+   (the wordmark that used to fill the empty space is gone) */
+footer[data-framer-name="Footer"]{
+  height:auto !important;
+  min-height:0 !important;
+  padding:56px 0 !important;
+}
+footer[data-framer-name="Footer"] [data-framer-name="Footer Container"]{
+  height:auto !important;
+}

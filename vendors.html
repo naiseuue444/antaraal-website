@@ -6,7 +6,7 @@
 <title>Vendors — Antaraal</title>
 <meta name="description" content="Aerospace supplier directory — verified manufacturing and special-process capabilities, certifications, lead times and locations.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=17">
+<link rel="stylesheet" href="app/app.css?v=19">
 </head>
 <body>
 <main id="app">
@@ -15,9 +15,11 @@
     <div class="phead">
       <p class="phead__kicker">Aerospace supply chain</p>
       <h1>Vendors</h1>
-      <p>Aerospace manufacturing and special-process suppliers. A vendor is marked
-         <b>Verified</b> only when it holds a recognised aerospace quality approval
-         (AS/EN&nbsp;9100, AS&nbsp;9120, NADCAP, CEMILAC or CAR/EASA&nbsp;Part-145).</p>
+      <p>Aerospace manufacturing and special-process suppliers. Antaraal's vendor
+         verification is not live yet, so every supplier is shown as
+         <b>pending verification</b> — each profile still lists the certifications
+         and approvals the supplier has published (AS/EN&nbsp;9100, AS&nbsp;9120,
+         NADCAP, ISO&nbsp;9001, CEMILAC, CAR/EASA&nbsp;Part-145).</p>
       <div class="catstat" id="vstat"></div>
     </div>
 
@@ -37,6 +39,9 @@
         <button class="chip" data-f="iso">ISO 9001</button>
         <button class="chip" data-f="pending">Pending verification</button>
       </div>
+      <p class="muted" id="certnote" style="margin:8px 0 0;font-size:13px" hidden>
+        Verification badges are turned off for now — every supplier shows as pending.
+      </p>
     </div>
 
     <section>
@@ -50,9 +55,9 @@
   </div>
 </main>
 
-<script src="app/vendors.js?v=17"></script>
-<script src="app/data.js?v=17"></script>
-<script src="app/app.js?v=17"></script>
+<script src="app/vendors.js?v=19"></script>
+<script src="app/data.js?v=19"></script>
+<script src="app/app.js?v=19"></script>
 <script>
 (function () {
   var A = window.Antaraal;
@@ -62,6 +67,14 @@
   var PAGE = 24;
   var state = { q: "", filter: "all", field: null, shown: PAGE };
 
+  /* verification is not live — collapse the badge filters, all vendors are pending */
+  if (!A.verificationLive) {
+    var fw = document.getElementById("filter");
+    fw.querySelectorAll('[data-f="verified"],[data-f="iso"],[data-f="pending"]').forEach(function (b) { b.remove(); });
+    fw.hidden = true;
+    document.getElementById("certnote").hidden = false;
+  }
+
   var field = new URLSearchParams(location.search).get("field");
   if (field) {
     state.field = field.toLowerCase();
@@ -70,6 +83,7 @@
   }
 
   function levelOf(v) {
+    if (!A.verificationLive) return "none";              // verification not live yet
     if (v.certLevel) return v.certLevel;                 // aerospace | iso | none
     return v.verified ? "aerospace" : (v.certText ? "iso" : "none");
   }
@@ -224,7 +238,9 @@
   var s = A.stats();
   document.getElementById("vstat").innerHTML =
     '<span><b data-az-stat="vendors">' + s.vendors + "</b> suppliers</span>" +
-    '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>" +
+    (A.verificationLive
+      ? '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>"
+      : '<span><b>' + (s.certified || 0) + "</b> publish a quality cert</span>") +
     '<span><b data-az-stat="capabilities">' + s.capabilities + "</b> capabilities</span>" +
     '<span><b data-az-stat="locations">' + s.locations + "</b> locations</span>";
 
