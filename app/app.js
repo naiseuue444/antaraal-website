@@ -212,39 +212,25 @@
     [1500, 4000, 7000].forEach(function (t) { setTimeout(patch, t); });
   }
 
-  /* ---------- hero slider (homepage) ---------- */
-  var HERO_IMGS = ["hero.jpg", "hero-2.jpg", "hero-3.jpg"];
-  var heroTimer = null;
+  /* ---------- hero background (homepage) ----------
+     Single still image only. Framer re-hydrates and wipes the SSR <img>, so we
+     keep re-inserting our own layer. No slideshow — the hero image stays put. */
+  var HERO_IMG = "hero.jpg";
   function heroSlider() {
     var bg = document.querySelector('[data-framer-name="Hero Background"]');
     if (!bg) return;
     if (bg.querySelector(".az-hero")) return;              /* already there */
 
     var slider = h('<div class="az-hero" aria-hidden="true"></div>');
-    HERO_IMGS.forEach(function (src, i) {
-      var s = h('<div class="az-hero__slide"></div>');
-      s.style.backgroundImage = "url('" + src + "')";
-      if (i === 0) s.classList.add("is-active");
-      slider.appendChild(s);
-    });
+    var s = h('<div class="az-hero__slide is-active"></div>');
+    s.style.backgroundImage = "url('" + HERO_IMG + "')";
+    slider.appendChild(s);
     bg.insertBefore(slider, bg.firstChild);
-
-    if (heroTimer) return;
-    HERO_IMGS.slice(1).forEach(function (src) { var im = new Image(); im.src = src; });
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || HERO_IMGS.length < 2) return;
-    var idx = 0;
-    heroTimer = setInterval(function () {
-      var slides = document.querySelectorAll('[data-framer-name="Hero Background"] .az-hero__slide');
-      if (!slides.length) return;
-      slides.forEach(function (s) { s.classList.remove("is-active"); });
-      idx = (idx + 1) % slides.length;
-      slides[idx].classList.add("is-active");
-    }, 6500);
   }
   /* Framer re-hydrates the hero + footer and wipes injected nodes — keep re-inserting */
   function watchHomeInjections() {
     if (document.getElementById("app")) return;
-    var run = function () { heroSlider(); homeFooterCompany(); };
+    var run = function () { heroSlider(); homeFooterCompany(); chat(); };
     run();
     [300, 900, 1800, 3000, 5000, 8000].forEach(function (t) { setTimeout(run, t); });
     var mo = new MutationObserver(run);
@@ -356,6 +342,8 @@
     }
     function open(v) {
       panel.hidden = !v; fab.setAttribute("aria-expanded", String(v));
+      if (v) el.classList.remove("az-chat--away");
+      else if (el._azChatSync) el._azChatSync();
       if (v && !log.childElementCount) {
         add("bot", "Hi — I’m the Antaraal general-query assistant. Ask me about applying as a vendor, " +
                    "sourcing parts, verification, or lead times.");
@@ -378,6 +366,20 @@
       e.preventDefault(); var t = input.value.trim(); if (!t) return; input.value = ""; send(t);
     });
     document.body.appendChild(el);
+
+    /* On the Framer homepage the hero (video / main image) is a pinned layer, so
+       keep the launcher out of it: hide while near the top, reveal once the
+       reader has scrolled roughly a screen down. */
+    if (!document.getElementById("app")) {
+      var sync = function () {
+        var past = (window.pageYOffset || 0) > Math.max(360, window.innerHeight * 0.7);
+        el.classList.toggle("az-chat--away", !past && panel.hidden);
+      };
+      sync();
+      window.addEventListener("scroll", sync, { passive: true });
+      window.addEventListener("resize", sync, { passive: true });
+      el._azChatSync = sync;   /* let open()/close() re-sync */
+    }
   }
 
   /* ---------- widget styles (self-contained, load anywhere) ---------- */
@@ -421,7 +423,9 @@
       ".az-cookie__btn--accept{background:#5E2140;color:#fff}",
       "@media(max-width:520px){.az-cookie__actions{width:100%}.az-cookie__btn{flex:1}}",
       /* chat */
-      ".az-chat{position:fixed;right:20px;bottom:20px;z-index:290;font-family:'Inter',system-ui,sans-serif}",
+      ".az-chat{position:fixed;right:20px;bottom:20px;z-index:290;font-family:'Inter',system-ui,sans-serif;transition:opacity .3s ease,transform .3s ease}",
+      ".az-chat--away{opacity:0;transform:translateY(14px);pointer-events:none}",
+      ".az-chat__panel[hidden]{display:none!important}",
       ".az-chat__fab{width:54px;height:54px;border:0;border-radius:50%;background:#5E2140;color:#fff;cursor:pointer;box-shadow:0 16px 40px -12px rgba(94,33,64,.6);display:grid;place-items:center;transition:transform .15s}",
       ".az-chat__fab:hover{transform:translateY(-2px)}",
       ".az-chat__panel{position:absolute;right:0;bottom:66px;width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid rgba(30,26,46,.12);border-radius:16px;overflow:hidden;box-shadow:0 30px 70px -18px rgba(30,26,46,.35);display:flex;flex-direction:column}",
