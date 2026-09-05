@@ -3,43 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vendor — Antaraal</title>
-<meta name="description" content="Verified aerospace suppliers with certifications, capabilities and full profiles.">
+<title>Vendors — Antaraal</title>
+<meta name="description" content="Aerospace supplier directory — verified manufacturing and special-process capabilities, certifications, lead times and locations.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=14">
+<link rel="stylesheet" href="app/app.css?v=16">
 </head>
 <body>
 <main id="app">
   <div class="wrap">
 
     <div class="phead">
-      <p class="phead__kicker">Network</p>
-      <h1>Vendor</h1>
-      <p>Aerospace suppliers on the Antaraal network. Suppliers with published quality
-         certifications carry a <b>Verified</b> badge; others are listed as unverified until
-         audited.</p>
+      <p class="phead__kicker">Aerospace supply chain</p>
+      <h1>Vendors</h1>
+      <p>Aerospace manufacturing and special-process suppliers. A vendor is marked
+         <b>Verified</b> only when it holds a recognised aerospace quality approval
+         (AS/EN&nbsp;9100, AS&nbsp;9120, NADCAP, CEMILAC or CAR/EASA&nbsp;Part-145).</p>
       <div class="catstat" id="vstat"></div>
     </div>
 
     <div class="catbar">
       <form class="search" id="searchForm" role="search">
         <input class="search__input" id="q" type="search"
-               placeholder="Search suppliers — name, city or capability…" autocomplete="off">
+               placeholder="Search suppliers — name, city, process or certification…" autocomplete="off">
         <button class="search__btn" type="submit">Search</button>
       </form>
       <div class="fieldnote" id="fieldnote" hidden>
         <span>Filtered to <b id="fieldName"></b></span>
-        <a href="products.html">Browse all categories</a>
+        <a href="products.html">Browse all capabilities</a>
       </div>
       <div class="chips" id="filter">
         <button class="chip chip--active" data-f="all">All</button>
-        <button class="chip" data-f="verified">Verified</button>
-        <button class="chip" data-f="unverified">Unverified</button>
+        <button class="chip" data-f="verified">Aerospace-verified</button>
+        <button class="chip" data-f="iso">ISO 9001</button>
+        <button class="chip" data-f="pending">Pending verification</button>
       </div>
     </div>
 
     <section>
-      <p class="muted" id="resultCount" style="font-size:14px;margin:0 0 14px"></p>
+      <p class="muted" id="resultCount" style="margin:0 0 14px"></p>
       <div class="grid grid--2" id="list"></div>
       <div style="text-align:center;margin-top:26px">
         <button class="btn btn--ghost" id="more" hidden>Show more suppliers</button>
@@ -49,15 +50,14 @@
   </div>
 </main>
 
-<script src="app/vendors.js?v=14"></script>
-<script src="app/data.js?v=14"></script>
-<script src="app/app.js?v=14"></script>
+<script src="app/vendors.js?v=16"></script>
+<script src="app/data.js?v=16"></script>
+<script src="app/app.js?v=16"></script>
 <script>
 (function () {
   var A = window.Antaraal;
   var ALL = (window.ANTARAAL_VENDORS && window.ANTARAAL_VENDORS.length)
-    ? window.ANTARAAL_VENDORS
-    : (A.data.vendors || []);
+    ? window.ANTARAAL_VENDORS : (A.data.vendors || []);
 
   var PAGE = 24;
   var state = { q: "", filter: "all", field: null, shown: PAGE };
@@ -69,48 +69,46 @@
     document.getElementById("fieldnote").hidden = false;
   }
 
-  var STATES = ("andhra pradesh|arunachal pradesh|assam|bihar|chhattisgarh|goa|gujarat|haryana|" +
-    "himachal pradesh|jharkhand|karnataka|kerala|madhya pradesh|maharashtra|manipur|meghalaya|" +
-    "mizoram|nagaland|odisha|punjab|rajasthan|sikkim|tamil nadu|telangana|tripura|uttar pradesh|" +
-    "uttarakhand|west bengal|delhi|puducherry|chandigarh|jammu and kashmir|ladakh").split("|");
-  function city(addr) {
-    if (!addr) return "";
-    var s = addr.replace(/[–—-]?\s*(?:pin[:\-\s]*)?\b\d{3}\s?\d{3}\b.*$/i, "")
-                .replace(/[–—-]?\s*\b\d{5,6}\b.*$/, "");
-    var parts = s.split(/[,\n]/).map(function (x) { return x.trim(); })
-      .filter(Boolean).map(function (x) {
-        return x.replace(/\s*[-–—]\s*$/, "").replace(/\s*(India|IN)\s*$/i, "").trim();
-      })
-      .filter(Boolean);
-    while (parts.length > 1 && STATES.indexOf(parts[parts.length - 1].toLowerCase()) > -1) parts.pop();
-    var p = parts.length ? parts[parts.length - 1] : "";
-    return p.replace(/^[-\s]+/, "").replace(/[-\s]+$/, "").trim();
+  function levelOf(v) {
+    if (v.certLevel) return v.certLevel;                 // aerospace | iso | none
+    return v.verified ? "aerospace" : (v.certText ? "iso" : "none");
   }
 
   function matches(v) {
-    if (state.filter === "verified" && !v.verified) return false;
-    if (state.filter === "unverified" && v.verified) return false;
+    var lvl = levelOf(v);
+    if (state.filter === "verified" && lvl !== "aerospace") return false;
+    if (state.filter === "iso" && lvl !== "iso") return false;
+    if (state.filter === "pending" && lvl !== "none") return false;
     if (state.field) {
       var f = state.field;
       var ok = (v.categories || []).some(function (c) {
-        c = c.toLowerCase();
-        return c.indexOf(f) > -1 || f.indexOf(c) > -1;
+        c = c.toLowerCase(); return c.indexOf(f) > -1 || f.indexOf(c) > -1;
       });
       if (!ok) return false;
     }
     if (state.q) {
       var s = state.q.toLowerCase();
-      var hay = (v.name + " " + (v.address || "") + " " + (v.categories || []).join(" ") +
-                 " " + (v.certText || "") + " " + (v.activities || "")).toLowerCase();
+      var hay = (v.name + " " + (v.address || "") + " " + (v.location || "") + " " +
+                 (v.categories || []).join(" ") + " " + (v.certText || "") + " " +
+                 (v.activities || "")).toLowerCase();
       if (hay.indexOf(s) === -1) return false;
     }
     return true;
   }
 
   function badge(v) {
-    return v.verified
-      ? '<span class="badge badge--verified">Verified</span>'
-      : '<span class="badge badge--unverified">Unverified</span>';
+    var lvl = levelOf(v);
+    if (lvl === "aerospace") return '<span class="badge badge--verified">Verified</span>';
+    if (lvl === "iso")       return '<span class="badge badge--iso">ISO 9001</span>';
+    return '<span class="badge badge--unverified">Pending verification</span>';
+  }
+
+  function perfChips(v) {
+    var out = [];
+    if (v.leadTime)     out.push('<span class="perf">Lead ' + A.esc(v.leadTime) + "</span>");
+    if (v.deliveryTime) out.push('<span class="perf">Delivery ' + A.esc(v.deliveryTime) + "</span>");
+    if (v.otd)          out.push('<span class="perf perf--otd">' + A.esc(v.otd) + "% on-time</span>");
+    return out.length ? '<div class="perfrow">' + out.join("") + "</div>" : "";
   }
 
   function tags(list, n) {
@@ -123,9 +121,10 @@
   }
 
   function card(v) {
-    var loc = city(v.address);
+    var lvl = levelOf(v);
+    var loc = v.location || "";
     return (
-      '<article class="card vcard ' + (v.verified ? "vcard--verified" : "vcard--unverified") + '">' +
+      '<article class="card vcard vcard--' + lvl + '">' +
         '<div class="vcard__head">' +
           '<div class="vcard__id">' +
             (v.logo
@@ -139,9 +138,10 @@
         "</div>" +
 
         (v.certText
-          ? '<p class="vcard__cert"><b>Certified</b> ' + A.esc(v.certText) + "</p>"
+          ? '<p class="vcard__cert"><b>' + (lvl === "aerospace" ? "Aerospace" : "Quality") + "</b> " + A.esc(v.certText) + "</p>"
           : '<p class="vcard__cert vcard__cert--none">No quality certification on file</p>') +
 
+        perfChips(v) +
         '<div class="minitags">' + tags(v.categories, 4) + "</div>" +
 
         '<div class="card__foot">' +
@@ -154,8 +154,23 @@
     );
   }
 
+  function row(k, v) { return '<div class="prof__row"><span class="prof__k">' + k + "</span><span>" + v + "</span></div>"; }
+
   function profile(v) {
+    var lvl = levelOf(v);
     var box = A.h('<div></div>');
+
+    var deliveryVal;
+    if (v.leadTime || v.deliveryTime || v.otd) {
+      deliveryVal = (v.leadTime ? "Typical lead time <b>" + A.esc(v.leadTime) + "</b>. " : "") +
+                    (v.deliveryTime ? "Delivery <b>" + A.esc(v.deliveryTime) + "</b>. " : "") +
+                    (v.otd ? "On-time delivery <b>" + A.esc(v.otd) + "%</b>. " : "") +
+                    "Firm dates confirmed per RFQ.";
+    } else {
+      deliveryVal = "Lead and delivery times are confirmed per RFQ. " +
+                    "<a href='apply.html'>Request a quote</a> for committed dates.";
+    }
+
     box.innerHTML =
       '<div class="prof">' +
         '<div class="prof__head">' +
@@ -164,18 +179,21 @@
             (v.address ? '<p class="prof__addr">' + A.esc(v.address) + "</p>" : "") +
           "</div>" +
         "</div>" +
-        (v.certText ? '<div class="prof__row"><span class="prof__k">Certifications</span><span>' + A.esc(v.certText) + "</span></div>" : "") +
+        (v.specialisation ? row("Specialisation", A.esc(v.specialisation)) : "") +
+        (v.location ? row("Location", A.esc(v.location)) : "") +
+        (v.certText ? row(lvl === "aerospace" ? "Aerospace approvals" : "Certifications", A.esc(v.certText)) : "") +
         ((v.categories || []).length
-          ? '<div class="prof__row"><span class="prof__k">Categories</span><span class="prof__tags">' +
+          ? '<div class="prof__row"><span class="prof__k">Capabilities</span><span class="prof__tags">' +
             v.categories.map(function (c) {
               return '<a class="minitag" href="vendors.html?field=' + encodeURIComponent(c) + '">' + A.esc(c) + "</a>";
             }).join("") + "</span></div>"
           : "") +
+        row("Delivery & lead time", deliveryVal) +
         (v.website ? '<div class="prof__row"><span class="prof__k">Website</span><a href="' + A.esc(v.website) + '" target="_blank" rel="noopener">' + A.esc(v.websiteLabel || v.website) + "</a></div>" : "") +
-        (v.contact ? '<div class="prof__row"><span class="prof__k">Contact</span><span>' + A.esc(v.contact) + "</span></div>" : "") +
-        (v.activities ? '<div class="prof__act"><span class="prof__k">Activities</span><p>' + A.esc(v.activities).replace(/\n\n/g, "</p><p>") + "</p></div>" : "") +
+        (v.contact ? row("Contact", A.esc(v.contact)) : "") +
+        (v.activities ? '<div class="prof__act"><span class="prof__k">Capability statement</span><p>' + A.esc(v.activities).replace(/\n\n/g, "</p><p>") + "</p></div>" : "") +
         '<div class="card__foot" style="margin-top:6px">' +
-          '<a class="btn btn--ghost btn--sm" href="buyers.html">See open tenders</a>' +
+          '<a class="btn btn--ghost btn--sm" href="buyers.html">See open requirements</a>' +
           '<a class="btn btn--green btn--sm" href="apply.html">Request a quote</a>' +
         "</div>" +
       "</div>";
@@ -192,20 +210,23 @@
       ? slice.map(card).join("")
       : '<div class="empty">' +
         (state.field
-          ? "No listed suppliers in <b>" + A.esc(field) + "</b> yet. <a href='apply.html'>Apply as a vendor</a>."
+          ? "No listed suppliers for <b>" + A.esc(field) + "</b> yet. <a href='apply.html'>Apply as a vendor</a>."
           : "No suppliers match your search.") + "</div>";
+
+    var labels = { verified: "aerospace-verified", iso: "ISO 9001", pending: "pending verification" };
     document.getElementById("resultCount").textContent =
       hits.length + " supplier" + (hits.length === 1 ? "" : "s") +
       (state.field ? " in " + field : "") +
-      (state.filter !== "all" ? " · " + state.filter : "");
+      (state.filter !== "all" ? " · " + (labels[state.filter] || state.filter) : "");
     document.getElementById("more").hidden = state.shown >= hits.length;
   }
 
-  var vstat = document.getElementById("vstat");
-  vstat.innerHTML =
-    "<span><b>" + ALL.length + "</b> suppliers</span>" +
-    "<span><b>" + ALL.filter(function (v) { return v.verified; }).length + "</b> verified</span>" +
-    "<span><b>" + new Set(ALL.reduce(function (a, v) { return a.concat(v.categories || []); }, [])).size + "</b> capabilities</span>";
+  var s = A.stats();
+  document.getElementById("vstat").innerHTML =
+    '<span><b data-az-stat="vendors">' + s.vendors + "</b> suppliers</span>" +
+    '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>" +
+    '<span><b data-az-stat="capabilities">' + s.capabilities + "</b> capabilities</span>" +
+    '<span><b data-az-stat="locations">' + s.locations + "</b> locations</span>";
 
   document.getElementById("searchForm").addEventListener("submit", function (e) {
     e.preventDefault(); state.q = document.getElementById("q").value.trim(); render(true);
@@ -221,9 +242,7 @@
     Array.prototype.forEach.call(this.children, function (c) { c.classList.toggle("chip--active", c === b); });
     render(true);
   });
-  document.getElementById("more").addEventListener("click", function () {
-    state.shown += PAGE; render();
-  });
+  document.getElementById("more").addEventListener("click", function () { state.shown += PAGE; render(); });
   document.getElementById("list").addEventListener("click", function (e) {
     var b = e.target.closest("[data-profile]"); if (!b) return;
     var v = vById[b.dataset.profile];

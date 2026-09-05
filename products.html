@@ -4,19 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Products — Antaraal</title>
-<meta name="description" content="Browse the aerospace product catalogue by category and find verified suppliers in each field.">
+<meta name="description" content="Browse the aerospace supply chain by manufacturing capability and special process, and find the suppliers in each field.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=14">
+<link rel="stylesheet" href="app/app.css?v=16">
 </head>
 <body>
 <main id="app">
   <div class="wrap">
 
     <div class="phead">
-      <p class="phead__kicker">Catalogue</p>
+      <p class="phead__kicker">Aerospace capabilities</p>
       <h1>Products</h1>
-      <p>Browse the aerospace catalogue by category. Every category opens the verified
-         suppliers who work in that field.</p>
+      <p>Browse the aerospace supply chain by manufacturing capability, special process
+         and component type. Every capability opens the suppliers who work in that field.</p>
       <div class="catstat" id="catstat"></div>
     </div>
 
@@ -35,10 +35,10 @@
   </div>
 </main>
 
-<script src="app/categories.js?v=14"></script>
-<script src="app/vendors.js?v=14"></script>
-<script src="app/data.js?v=14"></script>
-<script src="app/app.js?v=14"></script>
+<script src="app/categories.js?v=16"></script>
+<script src="app/vendors.js?v=16"></script>
+<script src="app/data.js?v=16"></script>
+<script src="app/app.js?v=16"></script>
 <script>
 (function () {
   var A = window.Antaraal;
@@ -56,10 +56,12 @@
     })
     .sort(function (a, b) { return a.name.toLowerCase().localeCompare(b.name.toLowerCase()); });
 
-  var vendorCount = (window.ANTARAAL_VENDORS || []).length;
+  var st = (window.Antaraal && window.Antaraal.stats && window.Antaraal.stats()) ||
+           { vendors: (window.ANTARAAL_VENDORS || []).length, verified: 0 };
   document.getElementById("catstat").innerHTML =
-    "<span><b>" + CATS.length + "</b> categories</span>" +
-    (vendorCount ? "<span><b>" + vendorCount + "</b> listed suppliers</span>" : "") +
+    "<span><b>" + CATS.length + "</b> capabilities</span>" +
+    (st.vendors ? '<span><b data-az-stat="vendors">' + st.vendors + "</b> listed suppliers</span>" : "") +
+    (st.verified ? '<span><b data-az-stat="verified">' + st.verified + "</b> aerospace-verified</span>" : "") +
     "<span><b>Pan-India</b> network</span>";
 
   function letterOf(name) {

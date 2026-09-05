@@ -361,15 +361,14 @@ html,body{ background-color:#F3EDE0; }
 /* wine selection */
 ::selection{ background:#5E2140; color:#fff; }
 
-/* Hero: static launch image instead of the template video */
-[data-framer-name="Hero Background"]{
-  background-image:url("hero.jpg") !important;
-  background-size:cover !important;
-  background-position:center 42% !important;
-  background-repeat:no-repeat !important;
-}
+/* Hero: image slider replaces the template video (slides injected by app/app.js) */
+[data-framer-name="Hero Background"]{ background-color:#0c1226 !important; }
 [data-framer-name="Hero Background"] video,
 [data-framer-name="Hero Background"] .framer-4rkky9-container > *{ opacity:0 !important; }
+[data-framer-name="Hero Background"] .az-hero,
+[data-framer-name="Hero Background"] .az-hero *{ opacity:initial; }
+[data-framer-name="Hero Background"] .az-hero__slide{ opacity:0; }
+[data-framer-name="Hero Background"] .az-hero__slide.is-active{ opacity:1; }
 
 /* News/blog category pill: white text on the wine pill */
 [data-framer-name="Blog Tag Wrapper"] .framer-text,

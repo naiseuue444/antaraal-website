@@ -90,7 +90,7 @@ window.ANTARAAL_DATA = {
      ---------------------------------------------------------------------- */
   tenders: [
     { id:"t-brake-batch", title:"Brake assemblies — A320 family, 60 units",
-      buyer:"IndeAir Fleet Services", private:false,
+      buyer:"IndeAir Airlines", private:false,
       capacity:"₹8–12 Cr / quarter", quantity:"60 units", deadline:"2026-10-15",
       location:"Delhi (DEL)",
       summary:"New or serviceable main wheel brake assemblies with full trace and 8130-3." },
@@ -99,7 +99,7 @@ window.ANTARAAL_DATA = {
       buyer:"Confidential regional carrier", private:true,
       capacity:"₹3–5 Cr", quantity:"12 shipsets", deadline:"2026-11-02",
       location:"Bengaluru (BLR)",
-      summary:"Supply + STC support for VHF Nav/Comm transceivers across a turboprop fleet." },
+      summary:"Supply + STC support for VHF Nav/Comm transceivers across a turboprop programme." },
 
     { id:"t-seat-track", title:"Seat track extrusions — 400 m",
       buyer:"Antaraal Interiors Partner", private:false,

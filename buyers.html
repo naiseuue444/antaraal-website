@@ -3,36 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Buyer — Antaraal</title>
-<meta name="description" content="Active buyer tenders on Antaraal. Vendors can apply or place a bid.">
+<title>Buyers — Antaraal</title>
+<meta name="description" content="How aerospace buyers publish requirements on Antaraal and how verified vendors respond.">
 <link rel="icon" href="m/antaraal-logo.png">
-<link rel="stylesheet" href="app/app.css?v=14">
+<link rel="stylesheet" href="app/app.css?v=16">
 </head>
 <body>
 <main id="app">
   <div class="wrap">
 
     <div class="phead">
-      <p class="phead__kicker">Demand</p>
-      <h1>Buyer</h1>
-      <p>Sample procurement tenders showing how buyers post requirements. Verified vendors
-         apply to supply, or place a competitive bid.</p>
+      <p class="phead__kicker">Aerospace demand</p>
+      <h1>Buyers</h1>
+      <p>How aerospace buyers post requirements on Antaraal. Airlines, operators, OEMs and
+         defence teams publish a spec; aerospace-verified vendors apply to supply or bid.</p>
+      <div class="catstat" id="bstat"></div>
     </div>
 
     <section>
-      <h2 class="section-title">Example tenders <span class="muted" id="count"></span></h2>
+      <h2 class="section-title">Example requirements <span class="muted" id="count"></span></h2>
       <div class="grid grid--2" id="tenders"></div>
     </section>
 
   </div>
 </main>
 
-<script src="app/data.js?v=14"></script>
-<script src="app/app.js?v=14"></script>
+<script src="app/stats.js?v=16"></script>
+<script src="app/data.js?v=16"></script>
+<script src="app/app.js?v=16"></script>
 <script>
 (function () {
   var A = window.Antaraal, D = A.data;
   var tenders = D.tenders || [];
+
+  var s = A.stats();
+  var bs = document.getElementById("bstat");
+  if (bs) bs.innerHTML =
+    '<span><b data-az-stat="vendors">' + s.vendors + "</b> suppliers can respond</span>" +
+    '<span><b data-az-stat="verified">' + s.verified + "</b> aerospace-verified</span>" +
+    '<span><b data-az-stat="capabilities">' + s.capabilities + "</b> capabilities covered</span>";
 
   function card(t) {
     var d = A.daysLeft(t.deadline);
@@ -82,7 +91,7 @@
       '<div class="field"><label>Notes</label><textarea name="notes" placeholder="Certifications, trace, capacity…"></textarea></div>' +
       '<button class="btn btn--green" type="submit">' +
         (kind === "bid" ? "Submit bid" : "Send application") + "</button>" +
-      '<p class="form__note">Saved to this browser for the demo. Connect an API to receive submissions.</p>';
+      '<p class="form__note">This is an illustrative flow — submissions are stored in your browser only.</p>';
 
     wrap.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -95,7 +104,7 @@
       render();
       var done = A.h('<div class="done"><h3>' +
         (kind === "bid" ? "Bid received" : "Application sent") +
-        '</h3><p>The buyer will see your submission. You can track it from your dashboard once connected.</p></div>');
+        '</h3><p>In a live account the buyer receives this and you can track it from your dashboard.</p></div>');
       document.getElementById(t.id).appendChild(done);
       done.scrollIntoView({ block: "center" });
     });
@@ -114,7 +123,7 @@
     document.getElementById("count").textContent = "";
     document.getElementById("tenders").innerHTML = tenders.length
       ? tenders.map(card).join("")
-      : '<div class="empty">No active tenders. Add rows in <code>app/data.js</code>.</div>';
+      : '<div class="empty">No example requirements are configured yet.</div>';
     if (location.hash) {
       var el = document.getElementById(location.hash.slice(1));
       if (el) el.scrollIntoView({ block: "center" });
