@@ -360,3 +360,21 @@ a.minitag:hover{background:var(--wine);color:#fff}
 .foot small{color:rgba(255,255,255,.32);font-size:11.5px}
 
 #resultCount{font-size:13px;color:var(--ink-35);letter-spacing:.01em}
+
+/* ---------- legal / long-form documents (terms, privacy) ---------- */
+.legal{max-width:74ch;margin:40px 0 96px;font-size:15px;line-height:1.72;color:var(--ink-70)}
+.legal__meta{margin:0 0 40px;font-size:12.5px;color:var(--ink-35);letter-spacing:.02em}
+.legal h2{font-size:1.28rem;font-weight:600;letter-spacing:-.015em;color:var(--ink);margin:42px 0 12px;scroll-margin-top:90px}
+.legal h2:first-of-type{margin-top:8px}
+.legal h3{font-size:1.02rem;font-weight:600;color:var(--ink);margin:24px 0 8px}
+.legal p{margin:0 0 14px}
+.legal ul{margin:0 0 16px;padding-left:22px}
+.legal li{margin:0 0 7px}
+.legal a{color:var(--wine);text-decoration:underline;text-underline-offset:2px}
+.legal strong{color:var(--ink);font-weight:600}
+.legal__toc{border:1px solid var(--line);border-radius:var(--r);padding:18px 22px;margin:0 0 44px;background:var(--card)}
+.legal__toc p{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-35)}
+.legal__toc ol{margin:0;padding-left:20px;columns:2;column-gap:30px;font-size:13px;line-height:1.6}
+.legal__toc li{margin:0 0 4px}
+.legal__note{border-left:3px solid var(--wine);background:var(--wine-soft);padding:14px 18px;border-radius:0 var(--r) var(--r) 0;margin:0 0 32px;font-size:13.5px;color:var(--ink-70)}
+@media (max-width:560px){.legal__toc ol{columns:1}}

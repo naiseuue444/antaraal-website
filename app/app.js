@@ -141,7 +141,11 @@
         "</div>" +
         '<div class="foot__bar">' +
           "<small>&copy; " + new Date().getFullYear() + " " + esc(COMPANY.name) + ". All rights reserved.</small>" +
-          '<small><a href="#" data-az-cookie-settings>Cookie preferences</a></small>' +
+          '<small class="foot__legal">' +
+            '<a href="#" data-az-cookie-settings>Cookie preferences</a>' +
+            '<a href="terms.html">Terms of Service</a>' +
+            '<a href="privacy.html">Privacy Policy</a>' +
+          "</small>" +
         "</div>" +
       "</div></footer>"
     );
@@ -209,8 +213,8 @@
           "<small>&copy; " + year + " " + esc(COMPANY.name) + ". All rights reserved.</small>" +
           '<small class="azc-legal">' +
             '<a href="#" data-az-cookie-settings>Cookie preferences</a>' +
-            '<a href="./terms">Terms of Service</a>' +
-            '<a href="./privacy">Privacy Policy</a>' +
+            '<a href="terms.html">Terms of Service</a>' +
+            '<a href="privacy.html">Privacy Policy</a>' +
           "</small>" +
         "</div>" +
         '<a class="azc-bigmark" href="index.html" aria-label="Antaraal home">' +
@@ -570,8 +574,9 @@
       ".foot__company{font-style:normal;display:flex;flex-direction:column;gap:7px;font-size:12.5px;color:rgba(255,255,255,.6);line-height:1.6}",
       ".foot__company .foot__k{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4)}",
       ".foot__company a{color:rgba(255,255,255,.82)}.foot__company a:hover{color:#fff}",
-      ".foot__bar{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}",
+      ".foot__bar{display:flex;justify-content:space-between;gap:10px 24px;flex-wrap:wrap;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}",
       ".foot__bar a{color:rgba(255,255,255,.45)}.foot__bar a:hover{color:#fff}",
+      ".foot__legal{display:flex;gap:18px;flex-wrap:wrap}",
       "@media(max-width:820px){.foot .foot__top{grid-template-columns:1fr;gap:26px}}",
       /* homepage company / contact band — white text on the wine footer,
          forced below the Framer footer (which carries order:1003) */
