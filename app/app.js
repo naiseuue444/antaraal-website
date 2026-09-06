@@ -285,10 +285,72 @@
     slider.appendChild(s);
     bg.insertBefore(slider, bg.firstChild);
   }
+  /* ---------- "How it works" video section (homepage) ---------- */
+  function howItWorks() {
+    if (document.querySelector(".az-hiw")) return;
+    var anchor = document.querySelector('[data-framer-name="Stastitic"]') ||
+                 document.querySelector('[data-framer-name="Our Solution"]');
+    if (!anchor || !anchor.parentElement) return;
+
+    var sec = h(
+      '<section class="az-hiw" data-az-hiw aria-labelledby="az-hiw-title">' +
+        '<div class="az-hiw__inner">' +
+          '<p class="az-hiw__kicker">How it works</p>' +
+          '<h2 class="az-hiw__title" id="az-hiw-title">See how aerospace sourcing works on Antaraal</h2>' +
+          '<p class="az-hiw__lead">Search by part number or capability, see which vendors are screened and ' +
+            'certified, and get delivery timelines up front — without chasing quotes across a dozen inboxes.</p>' +
+          '<div class="az-hiw__stage">' +
+            '<video class="az-hiw__video" preload="none" playsinline ' +
+              'poster="m/how-it-works-poster.jpg">' +
+              '<source src="m/how-it-works.mp4" type="video/mp4">' +
+            "</video>" +
+            '<button class="az-hiw__play" type="button" aria-label="Play the overview video">' +
+              '<span class="az-hiw__ring"></span>' +
+              '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
+            "</button>" +
+            '<span class="az-hiw__hint">Watch the 48-second overview</span>' +
+          "</div>" +
+        "</div>" +
+      "</section>"
+    );
+
+    var video = sec.querySelector(".az-hiw__video");
+    var playBtn = sec.querySelector(".az-hiw__play");
+    function start() {
+      sec.classList.add("is-playing");
+      video.setAttribute("controls", "");
+      var p = video.play();
+      if (p && p.catch) p.catch(function () {});
+    }
+    playBtn.addEventListener("click", start);
+    video.addEventListener("click", function () { if (!sec.classList.contains("is-playing")) start(); });
+    video.addEventListener("ended", function () {
+      sec.classList.remove("is-playing");
+      video.removeAttribute("controls");
+      video.load();                       /* restore the poster */
+    });
+
+    anchor.parentElement.insertBefore(sec, anchor);
+
+    /* reveal on scroll */
+    if ("IntersectionObserver" in window &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      var io = new IntersectionObserver(function (ents) {
+        ents.forEach(function (en) {
+          if (en.isIntersecting) { sec.classList.add("is-in"); io.disconnect(); }
+        });
+      }, { threshold: 0.2, rootMargin: "0px 0px -8% 0px" });
+      io.observe(sec);
+      setTimeout(function () { sec.classList.add("is-in"); }, 2500);  /* fail-safe */
+    } else {
+      sec.classList.add("is-in");
+    }
+  }
+
   /* Framer re-hydrates the hero + footer and wipes injected nodes — keep re-inserting */
   function watchHomeInjections() {
     if (document.getElementById("app")) return;
-    var run = function () { heroSlider(); homeFooterCompany(); chat(); };
+    var run = function () { heroSlider(); howItWorks(); homeFooterCompany(); chat(); };
     run();
     [300, 900, 1800, 3000, 5000, 8000].forEach(function (t) { setTimeout(run, t); });
     var mo = new MutationObserver(run);
@@ -453,6 +515,26 @@
       ".az-hero__slide.is-active{opacity:1}",
       "[data-framer-name='Hero Background']{background-color:#0c1226}",
       "[data-framer-name='Hero Background'] video{opacity:0!important}",
+      /* how-it-works video section (homepage) */
+      ".az-hiw{width:100%;align-self:stretch;box-sizing:border-box;background:#0C1226;color:#fff;padding:clamp(64px,9vw,120px) 24px;font-family:'Inter',system-ui,sans-serif;position:relative;z-index:1;overflow:hidden}",
+      ".az-hiw *{box-sizing:border-box}",
+      ".az-hiw__inner{max-width:1080px;margin:0 auto;text-align:center}",
+      ".az-hiw__kicker{margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C9788F}",
+      ".az-hiw__title{margin:0 auto;max-width:18ch;font-family:'Hind',Georgia,serif;font-weight:600;font-size:clamp(26px,3.6vw,42px);line-height:1.15;letter-spacing:-.01em}",
+      ".az-hiw__lead{margin:18px auto 0;max-width:56ch;font-size:clamp(14px,1.5vw,16.5px);line-height:1.65;color:rgba(255,255,255,.66)}",
+      ".az-hiw__stage{position:relative;margin:clamp(34px,5vw,56px) auto 0;max-width:960px;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#05070f;box-shadow:0 40px 120px -40px rgba(94,33,64,.65),0 0 0 1px rgba(255,255,255,.08);opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}",
+      ".az-hiw.is-in .az-hiw__stage{opacity:1;transform:none}",
+      ".az-hiw__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#05070f}",
+      ".az-hiw.is-playing .az-hiw__video{object-fit:contain}",
+      ".az-hiw__play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border:0;border-radius:50%;background:#5E2140;color:#fff;display:grid;place-items:center;cursor:pointer;padding-left:5px;transition:transform .18s ease,background .18s ease}",
+      ".az-hiw__play:hover{transform:translate(-50%,-50%) scale(1.06);background:#6E2A4C}",
+      ".az-hiw__play:focus-visible{outline:3px solid #fff;outline-offset:4px}",
+      ".az-hiw__ring{position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.45);animation:azHiwPulse 2.6s ease-out infinite}",
+      "@keyframes azHiwPulse{0%{transform:scale(.9);opacity:.7}70%{transform:scale(1.4);opacity:0}100%{opacity:0}}",
+      ".az-hiw__hint{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:12.5px;letter-spacing:.02em;color:rgba(255,255,255,.82);text-shadow:0 2px 12px rgba(0,0,0,.6);pointer-events:none}",
+      ".az-hiw.is-playing .az-hiw__play,.az-hiw.is-playing .az-hiw__hint{opacity:0;pointer-events:none;visibility:hidden}",
+      "@media(prefers-reduced-motion:reduce){.az-hiw__stage{opacity:1;transform:none;transition:none}.az-hiw__ring{animation:none}}",
+      "@media(max-width:640px){.az-hiw__play{width:66px;height:66px}}",
       /* footer (app pages) */
       ".foot .foot__top{display:grid;grid-template-columns:1.4fr .7fr 1.6fr;gap:34px;padding:6px 0 30px}",
       ".foot__brand p{margin:12px 0 14px;font-size:13px;color:rgba(255,255,255,.55);max-width:34ch;line-height:1.6}",
