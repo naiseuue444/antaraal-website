@@ -379,3 +379,28 @@ html,body{ background-color:#F3EDE0; }
    (.az-home-company), appended to <body>. Hide the Framer original. */
 footer[data-framer-name="Footer"],
 footer.framer-qdbnlu{ display:none !important; }
+
+/* ================= Wine buttons / pills: white text =================
+   The template used dark text on the old light-green fills; after the
+   green->wine swap those stayed black on a dark fill. Force white. */
+a[data-framer-name="Default"],
+a[data-framer-name="Default"] .framer-text,
+a[data-framer-name="Default"] .framer-text *,
+a[data-framer-name="Default"] p,
+a.framer-IPDLh,
+a.framer-IPDLh .framer-text,
+a.framer-IPDLh .framer-text *,
+[data-framer-name="Tag"] .framer-text,
+[data-framer-name="Tag"] .framer-text *,
+[data-framer-name="Tag"] p,
+[data-framer-name="Our Solution Card"].framer-r03phu .framer-text,
+[data-framer-name="Our Solution Card"].framer-r03phu .framer-text *,
+[data-framer-name="Our Solution Card"].framer-r03phu p,
+[data-framer-name="Our Solution Card"].framer-r03phu h1,
+[data-framer-name="Our Solution Card"].framer-r03phu h2,
+[data-framer-name="Our Solution Card"].framer-r03phu h3,
+[data-framer-name="Our Solution Card"].framer-r03phu h4{
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+  --framer-text-color:#ffffff !important;
+}
