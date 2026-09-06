@@ -286,6 +286,38 @@
     bg.insertBefore(slider, bg.firstChild);
   }
   /* ---------- "How it works" video section (homepage) ---------- */
+  var HIW_VIDEO = "m/how-it-works.mp4";
+  var HIW_POSTER = "m/how-it-works-poster.jpg";
+
+  function hiwLightbox() {
+    if (document.querySelector(".az-hiwbox")) return;
+    var box = h(
+      '<div class="az-hiwbox" role="dialog" aria-modal="true" aria-label="Antaraal overview video">' +
+        '<button class="az-hiwbox__x" type="button" aria-label="Close video">' +
+          '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>' +
+        "</button>" +
+        '<div class="az-hiwbox__frame">' +
+          '<video src="' + HIW_VIDEO + '" controls autoplay playsinline poster="' + HIW_POSTER + '"></video>' +
+        "</div>" +
+      "</div>"
+    );
+    var video = box.querySelector("video");
+    function close() {
+      try { video.pause(); } catch (e) {}
+      box.remove();
+      document.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = "";
+    }
+    function onKey(e) { if (e.key === "Escape") close(); }
+    box.addEventListener("click", function (e) { if (e.target === box) close(); });
+    box.querySelector(".az-hiwbox__x").addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    document.documentElement.style.overflow = "hidden";
+    document.body.appendChild(box);
+    setTimeout(function () { box.classList.add("is-open"); }, 10);
+    var p = video.play(); if (p && p.catch) p.catch(function () {});
+  }
+
   function howItWorks() {
     if (document.querySelector(".az-hiw")) return;
     var anchor = document.querySelector('[data-framer-name="Stastitic"]') ||
@@ -299,36 +331,19 @@
           '<h2 class="az-hiw__title" id="az-hiw-title">See how aerospace sourcing works on Antaraal</h2>' +
           '<p class="az-hiw__lead">Search by part number or capability, see which vendors are screened and ' +
             'certified, and get delivery timelines up front — without chasing quotes across a dozen inboxes.</p>' +
-          '<div class="az-hiw__stage">' +
-            '<video class="az-hiw__video" preload="none" playsinline ' +
-              'poster="m/how-it-works-poster.jpg">' +
-              '<source src="m/how-it-works.mp4" type="video/mp4">' +
-            "</video>" +
-            '<button class="az-hiw__play" type="button" aria-label="Play the overview video">' +
+          '<button class="az-hiw__stage" type="button" aria-label="Play the 48-second overview video">' +
+            '<span class="az-hiw__poster"></span>' +
+            '<span class="az-hiw__play">' +
               '<span class="az-hiw__ring"></span>' +
               '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>' +
-            "</button>" +
+            "</span>" +
             '<span class="az-hiw__hint">Watch the 48-second overview</span>' +
-          "</div>" +
+          "</button>" +
         "</div>" +
       "</section>"
     );
-
-    var video = sec.querySelector(".az-hiw__video");
-    var playBtn = sec.querySelector(".az-hiw__play");
-    function start() {
-      sec.classList.add("is-playing");
-      video.setAttribute("controls", "");
-      var p = video.play();
-      if (p && p.catch) p.catch(function () {});
-    }
-    playBtn.addEventListener("click", start);
-    video.addEventListener("click", function () { if (!sec.classList.contains("is-playing")) start(); });
-    video.addEventListener("ended", function () {
-      sec.classList.remove("is-playing");
-      video.removeAttribute("controls");
-      video.load();                       /* restore the poster */
-    });
+    sec.querySelector(".az-hiw__poster").style.backgroundImage = "url('" + HIW_POSTER + "')";
+    sec.querySelector(".az-hiw__stage").addEventListener("click", hiwLightbox);
 
     anchor.parentElement.insertBefore(sec, anchor);
 
@@ -339,7 +354,7 @@
         ents.forEach(function (en) {
           if (en.isIntersecting) { sec.classList.add("is-in"); io.disconnect(); }
         });
-      }, { threshold: 0.2, rootMargin: "0px 0px -8% 0px" });
+      }, { threshold: 0.15, rootMargin: "0px 0px -6% 0px" });
       io.observe(sec);
       setTimeout(function () { sec.classList.add("is-in"); }, 2500);  /* fail-safe */
     } else {
@@ -515,26 +530,35 @@
       ".az-hero__slide.is-active{opacity:1}",
       "[data-framer-name='Hero Background']{background-color:#0c1226}",
       "[data-framer-name='Hero Background'] video{opacity:0!important}",
-      /* how-it-works video section (homepage) */
-      ".az-hiw{width:100%;align-self:stretch;box-sizing:border-box;background:#0C1226;color:#fff;padding:clamp(64px,9vw,120px) 24px;font-family:'Inter',system-ui,sans-serif;position:relative;z-index:1;overflow:hidden}",
+      /* how-it-works video section (homepage) — full-bleed navy band */
+      ".az-hiw{position:relative;z-index:6;box-sizing:border-box;width:100vw;margin-left:50%;transform:translateX(-50%);background:#0C1226;color:#fff;padding:clamp(66px,9vw,128px) 24px;font-family:'Inter',system-ui,sans-serif;overflow:hidden}",
       ".az-hiw *{box-sizing:border-box}",
-      ".az-hiw__inner{max-width:1080px;margin:0 auto;text-align:center}",
+      ".az-hiw__inner{max-width:900px;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}",
       ".az-hiw__kicker{margin:0 0 14px;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C9788F}",
-      ".az-hiw__title{margin:0 auto;max-width:18ch;font-family:'Hind',Georgia,serif;font-weight:600;font-size:clamp(26px,3.6vw,42px);line-height:1.15;letter-spacing:-.01em}",
-      ".az-hiw__lead{margin:18px auto 0;max-width:56ch;font-size:clamp(14px,1.5vw,16.5px);line-height:1.65;color:rgba(255,255,255,.66)}",
-      ".az-hiw__stage{position:relative;margin:clamp(34px,5vw,56px) auto 0;max-width:960px;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#05070f;box-shadow:0 40px 120px -40px rgba(94,33,64,.65),0 0 0 1px rgba(255,255,255,.08);opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}",
+      ".az-hiw__title{margin:0;max-width:20ch;font-family:'Hind',Georgia,serif;font-weight:600;font-size:clamp(27px,3.7vw,44px);line-height:1.14;letter-spacing:-.01em}",
+      ".az-hiw__lead{margin:18px 0 0;max-width:54ch;font-size:clamp(14px,1.5vw,16.5px);line-height:1.65;color:rgba(255,255,255,.66)}",
+      ".az-hiw__stage{position:relative;display:block;width:100%;max-width:940px;margin:clamp(36px,5vw,60px) auto 0;padding:0;border:0;aspect-ratio:16/9;border-radius:18px;overflow:hidden;cursor:pointer;background:#05070f;box-shadow:0 44px 130px -46px rgba(94,33,64,.7),0 0 0 1px rgba(255,255,255,.08);opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}",
       ".az-hiw.is-in .az-hiw__stage{opacity:1;transform:none}",
-      ".az-hiw__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;background:#05070f}",
-      ".az-hiw.is-playing .az-hiw__video{object-fit:contain}",
-      ".az-hiw__play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border:0;border-radius:50%;background:#5E2140;color:#fff;display:grid;place-items:center;cursor:pointer;padding-left:5px;transition:transform .18s ease,background .18s ease}",
-      ".az-hiw__play:hover{transform:translate(-50%,-50%) scale(1.06);background:#6E2A4C}",
-      ".az-hiw__play:focus-visible{outline:3px solid #fff;outline-offset:4px}",
-      ".az-hiw__ring{position:absolute;inset:-10px;border-radius:50%;border:2px solid rgba(255,255,255,.45);animation:azHiwPulse 2.6s ease-out infinite}",
-      "@keyframes azHiwPulse{0%{transform:scale(.9);opacity:.7}70%{transform:scale(1.4);opacity:0}100%{opacity:0}}",
-      ".az-hiw__hint{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:12.5px;letter-spacing:.02em;color:rgba(255,255,255,.82);text-shadow:0 2px 12px rgba(0,0,0,.6);pointer-events:none}",
-      ".az-hiw.is-playing .az-hiw__play,.az-hiw.is-playing .az-hiw__hint{opacity:0;pointer-events:none;visibility:hidden}",
+      ".az-hiw__poster{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .5s ease}",
+      ".az-hiw__stage:hover .az-hiw__poster{transform:scale(1.03)}",
+      ".az-hiw__play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:88px;height:88px;border-radius:50%;background:#5E2140;color:#fff;display:grid;place-items:center;padding-left:6px;transition:transform .18s ease,background .18s ease}",
+      ".az-hiw__stage:hover .az-hiw__play{transform:translate(-50%,-50%) scale(1.06);background:#6E2A4C}",
+      ".az-hiw__stage:focus-visible{outline:3px solid #fff;outline-offset:4px}",
+      ".az-hiw__ring{position:absolute;inset:-12px;border-radius:50%;border:2px solid rgba(255,255,255,.45);animation:azHiwPulse 2.6s ease-out infinite}",
+      "@keyframes azHiwPulse{0%{transform:scale(.9);opacity:.7}70%{transform:scale(1.45);opacity:0}100%{opacity:0}}",
+      ".az-hiw__hint{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:12.5px;letter-spacing:.02em;color:rgba(255,255,255,.9);text-shadow:0 2px 14px rgba(0,0,0,.7);pointer-events:none}",
       "@media(prefers-reduced-motion:reduce){.az-hiw__stage{opacity:1;transform:none;transition:none}.az-hiw__ring{animation:none}}",
       "@media(max-width:640px){.az-hiw__play{width:66px;height:66px}}",
+      /* how-it-works lightbox */
+      ".az-hiwbox{position:fixed;inset:0;z-index:1000;background:rgba(4,6,12,.9);display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vmin,48px);opacity:0;transition:opacity .22s ease;font-family:'Inter',system-ui,sans-serif}",
+      ".az-hiwbox.is-open{opacity:1}",
+      ".az-hiwbox__frame{width:min(1180px,94vw);max-height:88vh;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 40px 120px -30px rgba(0,0,0,.7);transform:scale(.97);transition:transform .22s ease}",
+      ".az-hiwbox.is-open .az-hiwbox__frame{transform:none}",
+      ".az-hiwbox__frame video{width:100%;height:100%;display:block;background:#000}",
+      ".az-hiwbox__x{position:absolute;top:16px;right:18px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .15s ease}",
+      ".az-hiwbox__x:hover{background:rgba(255,255,255,.24)}",
+      ".az-hiwbox__x:focus-visible{outline:3px solid #fff;outline-offset:3px}",
+      "@media(max-width:640px){.az-hiwbox__x{top:10px;right:10px;width:40px;height:40px}}",
       /* footer (app pages) */
       ".foot .foot__top{display:grid;grid-template-columns:1.4fr .7fr 1.6fr;gap:34px;padding:6px 0 30px}",
       ".foot__brand p{margin:12px 0 14px;font-size:13px;color:rgba(255,255,255,.55);max-width:34ch;line-height:1.6}",
