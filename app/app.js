@@ -167,44 +167,70 @@
     "</address>";
   }
 
-  /* ---------- inject the company / contact band on the Framer homepage ---------- */
+  /* ---------- one full footer for the Framer homepage ----------
+     The template footer is hidden (styles.css); this is the whole thing. */
   function homeFooterCompany() {
     var f = document.querySelector("footer:not(.foot)");
     if (!f) return;
-    /* place it as a sibling AFTER the Framer footer so hydration can't wipe it */
-    var anchor = f.parentElement || document.body;
-    if (anchor.querySelector(":scope > .az-home-company")) return;
+    if (document.querySelector(".az-home-company")) return;
     var phoneDigits = COMPANY.phone.replace(/\D/g, "");
     var year = new Date().getFullYear();
     var wrap = h(
-      '<div class="az-home-company"><div class="az-home-company__inner">' +
-        '<div class="azc-col azc-brand">' +
-          '<a class="azc-logo" href="index.html"><img src="' + LOGO + '" alt="Antaraal"></a>' +
-          "<p>" + esc(COMPANY.tagline) + ".</p>" +
-          socialRow() +
+      '<div class="az-home-company" role="contentinfo">' +
+        '<div class="az-home-company__inner">' +
+          '<div class="azc-col azc-brand">' +
+            '<a class="azc-logo" href="index.html"><img src="' + LOGO + '" alt="Antaraal"></a>' +
+            "<p>" + esc(COMPANY.tagline) + ".</p>" +
+            socialRow() +
+          "</div>" +
+          '<div class="azc-col">' +
+            '<span class="foot__k">Explore</span>' +
+            '<a href="products.html">Products</a>' +
+            '<a href="vendors.html">Vendor</a>' +
+            '<a href="buyers.html">Buyer</a>' +
+            '<a href="apply.html">Apply</a>' +
+          "</div>" +
+          '<div class="azc-col">' +
+            '<span class="foot__k">Registered office</span>' +
+            "<p>" + esc(COMPANY.address) + "</p>" +
+            '<a href="mailto:' + esc(COMPANY.email) + '">' + esc(COMPANY.email) + "</a>" +
+            '<a href="tel:+91' + esc(phoneDigits) + '">+91 ' + esc(COMPANY.phone) + "</a>" +
+          "</div>" +
+          '<div class="azc-col azc-news">' +
+            '<span class="foot__k">Stay connected</span>' +
+            "<p>Aerospace sourcing updates from Antaraal.</p>" +
+            '<form class="azc-form" novalidate>' +
+              '<input type="email" name="email" placeholder="Enter your email" aria-label="Email address" required>' +
+              '<button type="submit">Subscribe</button>' +
+            "</form>" +
+          "</div>" +
         "</div>" +
-        '<div class="azc-col">' +
-          '<span class="foot__k">Registered office</span>' +
-          "<p>" + esc(COMPANY.address) + "</p>" +
+        '<div class="az-home-company__bar">' +
+          "<small>&copy; " + year + " " + esc(COMPANY.name) + ". All rights reserved.</small>" +
+          '<small class="azc-legal">' +
+            '<a href="#" data-az-cookie-settings>Cookie preferences</a>' +
+            '<a href="./terms">Terms of Service</a>' +
+            '<a href="./privacy">Privacy Policy</a>' +
+          "</small>" +
         "</div>" +
-        '<div class="azc-col">' +
-          '<span class="foot__k">Contact</span>' +
-          '<a href="mailto:' + esc(COMPANY.email) + '">' + esc(COMPANY.email) + "</a>" +
-          '<a href="tel:+91' + esc(phoneDigits) + '">+91 ' + esc(COMPANY.phone) + "</a>" +
-        "</div>" +
-      "</div>" +
-      '<div class="az-home-company__bar">' +
-        "<small>&copy; " + year + " " + esc(COMPANY.name) + ". All rights reserved.</small>" +
-        '<small class="azc-legal">' +
-          '<a href="#" data-az-cookie-settings>Cookie preferences</a>' +
-        "</small>" +
-      "</div>" +
-      '<a class="azc-bigmark" href="index.html" aria-label="Antaraal home">' +
-        '<img src="' + LOGO + '" alt="Antaraal"></a>' +
+        '<a class="azc-bigmark" href="index.html" aria-label="Antaraal home">' +
+          '<img src="' + LOGO + '" alt="Antaraal"></a>' +
       "</div>"
     );
-    if (f.nextSibling) anchor.insertBefore(wrap, f.nextSibling);
-    else anchor.appendChild(wrap);
+
+    var form = wrap.querySelector(".azc-form");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { form.email.focus(); return; }
+      Store.push("newsletter", { email: email });
+      form.replaceWith(h('<p class="azc-thanks">Thanks — you’re on the list.</p>'));
+    });
+
+    /* Append to <body>, after the Framer app root — the Framer canvas has a
+       fixed content height and React owns everything inside #main, so a plain
+       body child is both un-clipped and safe from re-hydration. */
+    document.body.appendChild(wrap);
   }
 
   /* ---------- dynamic vendor counts ---------- */
@@ -443,23 +469,32 @@
       "@media(max-width:820px){.foot .foot__top{grid-template-columns:1fr;gap:26px}}",
       /* homepage company / contact band — white text on the wine footer,
          forced below the Framer footer (which carries order:1003) */
-      ".az-home-company{order:1004;background:#5E2140;color:rgba(255,255,255,.78);padding:48px 24px 34px;font-family:'Inter',system-ui,sans-serif;font-size:13.5px;line-height:1.65;border-top:1px solid rgba(255,255,255,.16)}",
-      ".az-home-company__inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.5fr 1.3fr 1fr;gap:30px 48px;align-items:start}",
+      ".az-home-company{background:#5E2140;color:rgba(255,255,255,.78);padding:60px 24px 30px;font-family:'Inter',system-ui,sans-serif;font-size:13.5px;line-height:1.65}",
+      ".az-home-company__inner{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1.5fr .8fr 1.7fr 1.4fr;gap:36px 44px;align-items:start}",
       ".az-home-company .azc-col{display:flex;flex-direction:column;gap:10px}",
-      ".az-home-company p{margin:0;color:rgba(255,255,255,.72);max-width:42ch}",
+      ".az-home-company p{margin:0;color:rgba(255,255,255,.72);max-width:40ch}",
       ".az-home-company a{color:#fff;text-decoration:none}",
       ".az-home-company a:hover{text-decoration:underline}",
-      ".az-home-company .foot__k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5)}",
+      ".az-home-company .azc-col a{font-size:13.5px;color:rgba(255,255,255,.82)}",
+      ".az-home-company .foot__k{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px}",
       ".az-home-company .azc-logo img{height:26px;width:auto;filter:brightness(0) invert(1)}",
-      ".az-home-company .foot__social{margin-top:4px}",
+      ".az-home-company .foot__social{margin-top:6px;display:flex;gap:10px}",
       ".az-home-company .foot__social a{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:9px;color:#fff}",
       ".az-home-company .foot__social a:hover{background:rgba(255,255,255,.12)}",
-      ".az-home-company__bar{max-width:1160px;margin:26px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:rgba(255,255,255,.6)}",
+      ".az-home-company .azc-form{display:flex;gap:8px;margin-top:4px;max-width:320px}",
+      ".az-home-company .azc-form input{flex:1;min-width:0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:9px 12px;color:#fff;font:inherit;font-size:13px;outline:none}",
+      ".az-home-company .azc-form input::placeholder{color:rgba(255,255,255,.55)}",
+      ".az-home-company .azc-form input:focus{border-color:#fff;background:rgba(255,255,255,.14)}",
+      ".az-home-company .azc-form button{border:0;border-radius:8px;background:#fff;color:#5E2140;font:inherit;font-weight:600;font-size:13px;padding:9px 16px;cursor:pointer;white-space:nowrap}",
+      ".az-home-company .azc-form button:hover{opacity:.9}",
+      ".az-home-company .azc-thanks{margin-top:4px;color:#fff;font-size:13px;font-weight:600}",
+      ".az-home-company__bar{max-width:1180px;margin:40px auto 0;padding-top:18px;border-top:1px solid rgba(255,255,255,.2);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px;font-size:12px;color:rgba(255,255,255,.6)}",
       ".az-home-company__bar .azc-legal{display:flex;gap:18px;flex-wrap:wrap}",
       ".az-home-company__bar a{color:rgba(255,255,255,.75)}",
-      ".az-home-company .azc-bigmark{display:block;max-width:1160px;margin:30px auto 0;text-align:center}",
-      ".az-home-company .azc-bigmark img{height:clamp(44px,8vw,84px);width:auto;filter:brightness(0) invert(1);opacity:.92}",
-      "@media(max-width:820px){.az-home-company{padding:34px 22px 24px}.az-home-company__inner{grid-template-columns:1fr;gap:24px}.az-home-company__bar{flex-direction:column}}",
+      ".az-home-company .azc-bigmark{display:block;max-width:1180px;margin:34px auto 0;text-align:center}",
+      ".az-home-company .azc-bigmark img{height:clamp(46px,7vw,78px);width:auto;filter:brightness(0) invert(1);opacity:.9}",
+      "@media(max-width:960px){.az-home-company__inner{grid-template-columns:1fr 1fr}}",
+      "@media(max-width:560px){.az-home-company{padding:40px 22px 24px}.az-home-company__inner{grid-template-columns:1fr;gap:26px}.az-home-company__bar{flex-direction:column}}",
       /* cookie */
       ".az-cookie{position:fixed;left:16px;right:16px;bottom:16px;z-index:300;max-width:720px;margin:0 auto;background:#0c1226;color:#fff;border-radius:16px;padding:16px 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);font-family:'Inter',system-ui,sans-serif;font-size:13px;line-height:1.55}",
       ".az-cookie__text{flex:1;min-width:220px;color:rgba(255,255,255,.8)}",
